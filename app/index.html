@@ -2,7 +2,6 @@
 <html>
 <head>
     <script src="/lib/phaser.min.js"></script>
-    <script src="/assets/boatsSpriteListConfig.js"></script>
 </head>
 <body>
 
@@ -23,7 +22,8 @@
             preload: preload,
             create: create,
             // update: update
-        }
+        },
+        backgroundColor: '#ffffff',
     };
 
     var game = new Phaser.Game(config);
@@ -32,9 +32,11 @@
     {
         this.load.setBaseURL();
 
-        this.load.atlas('boats', 'assets/boatsSpriteListTransparent.png', boatsSpriteListConfig);
-        // this.load.image('logo', 'assets/sprites/phaser3-logo.png');
-        // this.load.image('red', 'assets/particles/red.png');
+        this.load.atlas(
+            'boats',
+            'assets/boatsSpriteListTransparent.png',
+            'assets/boatsSpriteListConfig.json'
+        );
     }
 
     function create ()
@@ -42,14 +44,21 @@
         var atlasTexture = this.textures.get('boats');
         var frames = atlasTexture.getFrameNames();
 
-        var placeX = 10;
+        var x = 0;
+        var y = 100;
         for (var i = 0; i < frames.length; i++)
         {
-            var x = placeX; //Phaser.Math.Between(0, 800);
-            var y = 100; //Phaser.Math.Between(0, 600);
-            placeX += 30;
-
+            x += 30;
             this.add.image(x, y, 'boats', frames[i]);
+        }
+
+        x = 0;
+        y = 200;
+        for (var i = 0; i < frames.length; i++)
+        {
+            x += 30;
+            var img = this.add.image(x, y, 'boats', frames[i]);
+            img.flipX = true;
         }
         //
         // this.add.sprite(400, 300, 'sky');
