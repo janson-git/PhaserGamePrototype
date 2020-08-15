@@ -21,7 +21,7 @@
         scene: {
             preload: preload,
             create: create,
-            // update: update
+            update: update
         },
         backgroundColor: '#ffffff',
     };
@@ -33,15 +33,15 @@
         this.load.setBaseURL();
 
         this.load.atlas(
-            'boats',
-            'assets/boatsSpriteListTransparent.png',
-            'assets/boatsSpriteListConfig.json'
+            'red_boat',
+            'assets/atlas/boatsSpriteListTransparent.png',
+            'assets/atlas/redBoatSpriteListConfig.json'
         );
     }
 
     function create ()
     {
-        var atlasTexture = this.textures.get('boats');
+        var atlasTexture = this.textures.get('red_boat');
         var frames = atlasTexture.getFrameNames();
 
         var x = 0;
@@ -49,7 +49,7 @@
         for (var i = 0; i < frames.length; i++)
         {
             x += 30;
-            this.add.image(x, y, 'boats', frames[i]);
+            this.add.image(x, y, 'red_boat', frames[i]);
         }
 
         x = 0;
@@ -57,28 +57,14 @@
         for (var i = 0; i < frames.length; i++)
         {
             x += 30;
-            var img = this.add.image(x, y, 'boats', frames[i]);
+            var img = this.add.image(x, y, 'red_boat', frames[i]);
             img.flipX = true;
         }
-        //
-        // this.add.sprite(400, 300, 'sky');
-        // this.add.image(400, 300, 'sky');
-        //
-        // var particles = this.add.particles('red');
-        //
-        // var emitter = particles.createEmitter({
-        //     speed: 100,
-        //     scale: { start: 1, end: 0 },
-        //     blendMode: 'ADD'
-        // });
-        //
-        // var logo = this.physics.add.image(400, 100, 'logo');
-        //
-        // logo.setVelocity(100, 200);
-        // logo.setBounce(1, 1);
-        // logo.setCollideWorldBounds(true);
-        //
-        // emitter.startFollow(logo);
+
+    }
+
+    function update(time, delta) {
+
     }
 </script>
 
