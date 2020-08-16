@@ -1,0 +1,23 @@
+{
+  "name": "boats-game",
+  "version": "1.0.0",
+  "description": "Some boats game prototype",
+  "main": "app.js",
+  "directories": {},
+  "scripts": {
+    "build": "webpack",
+    "build-watch": "webpack --watch",
+    "dev": "webpack-dev-server"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "copy-webpack-plugin": "^6.0.3",
+    "phaser": "^3.24.1",
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  }
+}

@@ -41,8 +41,13 @@ install:
 
 up:
 	cd $(APP_DIR) && docker-compose up -d
+	@echo "Install node modules, typescript, webpack..."
+	docker-compose exec node npm install
+	@echo "Done"
+	@echo "Install http-server"
 	docker-compose exec node npm install -g http-server
-	docker-compose exec -d node http-server /var/www
+# запускаем сервер в директории скомпилированных файлов
+	docker-compose exec -d node http-server /var/www/dist
 	@echo "http://localhost:8088"
 ##------------
 
