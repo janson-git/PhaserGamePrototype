@@ -11,6 +11,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected BACKWARD_SPEED_LIMIT: number = -50;
     protected ACCELERATION: number = 30; // m/sec^2
     protected DECELERATION: number = 50; // m/sec^2
+    protected ROTATE_SPEED: number = 90; // Degrees per second
 
     private sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
@@ -104,38 +105,39 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         let cursors = this.scene.input.keyboard.createCursorKeys();
 
         if (cursors.left.isDown) {
-            this.direction -= 4;
+            this.direction -= (this.ROTATE_SPEED * tDiff);
             if (this.direction < 0) {
-                this.direction = 360;
+                this.direction = 360 - (this.direction);
             }
-            this.updateVelocities();
         } else if (cursors.right.isDown) {
-            this.direction += 4;
+            this.direction += (this.ROTATE_SPEED * tDiff);
             if (this.direction > 360) {
-                this.direction = 0;
+                this.direction = this.direction - 360;
             }
-            this.updateVelocities();
         }
         if (cursors.up.isDown) {
             this.speed += (this.ACCELERATION * tDiff);
             if (this.speed > this.SPEED_LIMIT) {
                 this.speed = this.SPEED_LIMIT;
             }
-
-            this.updateVelocities();
         } else if (cursors.down.isDown) {
             this.speed -= (this.DECELERATION * tDiff);
             if (this.speed < this.BACKWARD_SPEED_LIMIT) {
                 this.speed = this.BACKWARD_SPEED_LIMIT;
             }
-
-            this.updateVelocities();
         }
+        // после всех изменений проапдейтим горизонтальную и вертикальную скорости
+        this.updateVelocities();
 
         if (cursors.space.isDown) {
             if (this.speed > 0) {
                 this.speed -= (this.DECELERATION * tDiff);
                 if (this.speed < 0) {
+                    this.speed = 0;
+                }
+            } else if (this.speed < 0) {
+                this.speed += (this.DECELERATION * tDiff);
+                if (this.speed > 0) {
                     this.speed = 0;
                 }
             }
