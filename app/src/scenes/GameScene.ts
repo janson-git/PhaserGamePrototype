@@ -31,13 +31,9 @@ export class GameScene extends Phaser.Scene {
 
         let player = new Player(this, 100, 100);
         this.player = this.physics.add.existing(player);
-
-        // this.add.rectangle(100,100, 2, 2, 0xFF0000);
-
-        this.physics.add.sprite(150, 150, 'red_boat', 'red_boat_1');
     }
 
-    public update() {
+    public update(time, delta) {
         const cursorKeys = this.input.keyboard.createCursorKeys();
 
         if (cursorKeys.up.isDown) {
@@ -56,6 +52,6 @@ export class GameScene extends Phaser.Scene {
             this.square.body.setVelocityX(0);
         }
 
-        this.player.update();
+        this.player.update(time, delta);
     }
 }

@@ -5,6 +5,13 @@ import Body = Phaser.Physics.Arcade.Body;
 export class Player extends Phaser.Physics.Arcade.Sprite {
     protected playerSpriteRotateSize = 11.25; // 11.25 градусов на спрайт
     protected direction: number = 0;
+    protected speed: number = 0;
+
+    protected SPEED_LIMIT: number = 150;
+    protected BACKWARD_SPEED_LIMIT: number = -50;
+    protected ACCELERATION: number = 30; // m/sec^2
+    protected DECELERATION: number = 50; // m/sec^2
+
     private sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
     constructor(scene: GameScene, x: integer, y: integer) {
@@ -13,7 +20,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.sprite = this.scene.physics.add.sprite(x, y, 'red_boat', 'red_boat_0');
     }
 
-    getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
+    private getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
         let halfStep = this.playerSpriteRotateSize / 2;
         // 5.625 - половина от шага поворота. Спрайт смотрит в определённый угол и плюс-минус половина шага.
         let index = 0;
@@ -92,7 +99,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         return {name: 'red_boat_' + num, flipX: false};
     };
 
-    public update() {
+    public update(time, delta) {
+        let tDiff = delta / 1000;
         let cursors = this.scene.input.keyboard.createCursorKeys();
 
         if (cursors.left.isDown) {
@@ -100,15 +108,39 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             if (this.direction < 0) {
                 this.direction = 360;
             }
+            this.updateVelocities();
         } else if (cursors.right.isDown) {
             this.direction += 4;
             if (this.direction > 360) {
                 this.direction = 0;
             }
+            this.updateVelocities();
         }
         if (cursors.up.isDown) {
-            // TODO: разобраться с движением!
-            this.sprite.setAngularVelocity(200);
+            this.speed += (this.ACCELERATION * tDiff);
+            if (this.speed > this.SPEED_LIMIT) {
+                this.speed = this.SPEED_LIMIT;
+            }
+
+            this.updateVelocities();
+        } else if (cursors.down.isDown) {
+            this.speed -= (this.DECELERATION * tDiff);
+            if (this.speed < this.BACKWARD_SPEED_LIMIT) {
+                this.speed = this.BACKWARD_SPEED_LIMIT;
+            }
+
+            this.updateVelocities();
+        }
+
+        if (cursors.space.isDown) {
+            if (this.speed > 0) {
+                this.speed -= (this.DECELERATION * tDiff);
+                if (this.speed < 0) {
+                    this.speed = 0;
+                }
+            }
+
+            this.updateVelocities();
         }
 
         // взять нужный спрайт, подставить в отображение
@@ -116,8 +148,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.sprite.destroy();
 
         this.sprite = this.scene.physics.add.sprite(
-            this.body.position.x,
-            this.body.position.y,
+            Math.floor(this.body.position.x),
+            Math.floor(this.body.position.y),
             'red_boat',
             config.name
         );
@@ -126,5 +158,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.sprite.flipX = true;
         }
         this.sprite.setOriginFromFrame();
+    }
+
+    private updateVelocities() {
+        let directionInRad = this.direction * Math.PI / 180;
+        this.setVelocityX(this.speed * Math.sin(directionInRad));
+        this.setVelocityY(-1 * this.speed * Math.cos(directionInRad));
     }
 }
