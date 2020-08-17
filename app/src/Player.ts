@@ -1,5 +1,5 @@
 import * as Phaser from "phaser";
-import {GameScene} from "./main";
+import {GameScene} from "./scenes/GameScene";
 import Body = Phaser.Physics.Arcade.Body;
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
