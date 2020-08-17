@@ -14,7 +14,7 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
-                exclude: /node_modules/,
+                exclude: [/node_modules/, path.resolve(__dirname, 'lib')],
             },
         ],
     },
@@ -39,7 +39,8 @@ module.exports = {
         contentBase: path.resolve(__dirname, 'dist'),
         writeToDisk: true,
         open: true,
-        port: 8086
+        port: 8080,
+        host: '0.0.0.0'
     },
 
     plugins: [
