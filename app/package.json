@@ -6,6 +6,7 @@
   "directories": {},
   "scripts": {
     "build": "webpack",
+    "build-prod": "webpack --config webpack.prod-config.js",
     "build-watch": "webpack --watch",
     "dev": "webpack-dev-server"
   },
