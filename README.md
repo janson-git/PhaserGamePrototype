@@ -18,7 +18,7 @@ git clone https://github.com/photonstorm/phaser.git ./app/lib/phaser
 # to build/run docker container with node, npm and run http-server
 docker-compose up -d
 docker-compose exec node npm install -g http-server
-docker-compose exec -d node http-server /var/www
+docker-compose exec -d node http-server /var/www/dist
 ```
 ---
 
