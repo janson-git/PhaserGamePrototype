@@ -1,12 +1,10 @@
 version: '2'
 
 services:
-  node:
-    build: .docker/node
+  # slim version of node container
+  app:
+    build: .docker/node-stretch-slim
     volumes:
       - ./app:/var/www
     ports:
       - 8088:8080
-#    volumes:
-#      - ./:/var/www/dev
-#      - ./.docker/nginx/conf.d:/etc/nginx/conf.d/
