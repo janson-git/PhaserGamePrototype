@@ -159,7 +159,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (config.flipX) {
             this.sprite.flipX = true;
         }
-        this.sprite.setOriginFromFrame();
     }
 
     private updateVelocities() {
