@@ -43,15 +43,14 @@ export class GameScene extends Phaser.Scene {
 
         // TODO: научится бы корректно нужные спрайты для тайлов указывать.
         // TODO: и соответственно - их проверять
-        map.setCollisionBetween(86, 999, true, false, this.layer);
+        map.setCollisionBetween(85, 999, true, false, this.layer);
 
         // let shapeGraphics = this.add.graphics();
         // this.drawCollisionShapes(shapeGraphics);
 
         // this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-        let player = new Player(this, 100, 100);
-        this.player = this.physics.add.existing(player);
+        this.player = new Player(this, 100, 100);
     }
 
     public update(time, delta) {

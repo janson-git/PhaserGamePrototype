@@ -1,6 +1,5 @@
 import * as Phaser from "phaser";
 import {GameScene} from "./scenes/GameScene";
-import Body = Phaser.Physics.Arcade.Body;
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     protected playerSpriteRotateSize = 11.25; // 11.25 градусов на спрайт
@@ -13,12 +12,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected DECELERATION: number = 50; // m/sec^2
     protected ROTATE_SPEED: number = 90; // Degrees per second
 
-    private sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-
     constructor(scene: GameScene, x: integer, y: integer) {
         super(scene, x, y, 'red_boat');
 
-        this.sprite = this.scene.physics.add.sprite(x, y, 'red_boat', 'red_boat_0');
+        // добавляем в сцену чтобы спрайт был видим
+        this.scene.add.existing(this);
+        // добавляем в физику, чтобы учавствовать в обсчитывании столкновений
+        this.scene.physics.add.existing(this);
     }
 
     private getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
@@ -126,8 +126,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.speed = this.BACKWARD_SPEED_LIMIT;
             }
         }
-        // после всех изменений проапдейтим горизонтальную и вертикальную скорости
-        this.updateVelocities();
 
         if (cursors.space.isDown) {
             if (this.speed > 0) {
@@ -141,24 +139,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     this.speed = 0;
                 }
             }
-
-            this.updateVelocities();
         }
+
+        // после всех изменений проапдейтим горизонтальную и вертикальную скорости
+        this.updateVelocities();
 
         // взять нужный спрайт, подставить в отображение
         let config = this.getPlayerSpriteByDirection(this, this.direction);
-        this.sprite.destroy();
+        // обновляем отображаемый фрейм спрайта
+        let frame = this.setFrame(config.name);
+        this.setBodySize(frame.width, frame.height);
 
-        this.sprite = this.scene.physics.add.sprite(
-            Math.floor(this.body.position.x),
-            Math.floor(this.body.position.y),
-            'red_boat',
-            config.name
-        );
-
-        if (config.flipX) {
-            this.sprite.flipX = true;
-        }
+        this.flipX = config.flipX || false;
     }
 
     private updateVelocities() {
