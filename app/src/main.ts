@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import {GameScene} from "./scenes/GameScene";
+import {HelloScene} from "./scenes/HelloScene";
 
 // the game itself
 let game;
@@ -18,7 +19,7 @@ window.onload = function() {
                 debug: true,
             },
         },
-        scene: [GameScene],
+        scene: [HelloScene, GameScene],
         parent: 'game',
         backgroundColor: '#aaaaff',
     };

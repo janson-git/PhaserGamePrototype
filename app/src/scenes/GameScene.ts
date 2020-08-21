@@ -5,7 +5,6 @@ import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 
 export class GameScene extends Phaser.Scene {
     private player: GameObjectWithBody;
-
     private layer: StaticTilemapLayer;
 
     constructor() {
@@ -35,7 +34,7 @@ export class GameScene extends Phaser.Scene {
 
         // The first parameter is the name of the tileset in Tiled and the second parameter is the key
         // of the tileset image used when loading the file in preload.
-        let tiles = map.addTilesetImage('cybernoid', 'tiles');
+        let tiles = map.addTilesetImage('waterAndGrass', 'tiles');
 
         // You can load a layer from the map using the layer name from Tiled, or by using the layer
         // index (0 in this case).
