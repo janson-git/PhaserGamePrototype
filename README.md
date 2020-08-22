@@ -1,3 +1,5 @@
+![Screenshot](docs/img/screenshot_.png)
+
 ## How to start
 
 ### A. Using `make` command:
