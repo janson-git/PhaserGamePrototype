@@ -47,9 +47,10 @@ export class GameScene extends Phaser.Scene {
         // let shapeGraphics = this.add.graphics();
         // this.drawCollisionShapes(shapeGraphics);
 
-        // this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-
         this.player = new Player(this, 100, 100);
+
+        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+        this.cameras.main.startFollow(this.player, true);
     }
 
     public update(time, delta) {

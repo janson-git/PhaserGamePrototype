@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import {GameScene} from "./scenes/GameScene";
 import {HelloScene} from "./scenes/HelloScene";
+import Center = Phaser.Scale.Center;
 
 // the game itself
 let game;
@@ -10,8 +11,9 @@ window.onload = function() {
         title: 'Sample',
         type: Phaser.AUTO,
         scale: {
-            width: 800,
-            height: 600,
+            width: 500,
+            height: 400,
+            autoCenter: Center.CENTER_BOTH
         },
         physics: {
             default: 'arcade',
