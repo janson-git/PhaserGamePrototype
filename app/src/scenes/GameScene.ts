@@ -25,7 +25,7 @@ export class GameScene extends Phaser.Scene {
             'assets/atlas/redBoatSpriteListConfig.json'
         );
 
-        this.load.image('tiles', 'assets/tilemaps/WaterMazeTiles.png');
+        this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
     }
 
@@ -34,7 +34,7 @@ export class GameScene extends Phaser.Scene {
 
         // The first parameter is the name of the tileset in Tiled and the second parameter is the key
         // of the tileset image used when loading the file in preload.
-        let tiles = map.addTilesetImage('waterAndGrass', 'tiles');
+        let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
 
         // You can load a layer from the map using the layer name from Tiled, or by using the layer
         // index (0 in this case).
@@ -50,6 +50,7 @@ export class GameScene extends Phaser.Scene {
         this.player = new Player(this, 100, 100);
 
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+        this.cameras.main.setRoundPixels(true);
         this.cameras.main.startFollow(this.player, true);
     }
 

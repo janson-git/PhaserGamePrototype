@@ -41,12 +41,12 @@
     {
       "columns":27,
       "firstgid":1,
-      "image":"..\/WaterMazeTiles.png",
-      "imageheight":601,
-      "imagewidth":676,
+      "image":"..\/WaterMazeTilesExtruded.png",
+      "imageheight":649,
+      "imagewidth":730,
       "margin":1,
       "name":"waterAndGrass",
-      "spacing":1,
+      "spacing":3,
       "tilecount":648,
       "tileheight":24,
       "tilewidth":24
