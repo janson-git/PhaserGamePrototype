@@ -76,7 +76,7 @@ export class GeneratorScene extends Phaser.Scene {
     }
 
     public create() {
-        let tree = this.generate(new Tree(450,350));
+        let tree = this.generate(new Tree(500,400));
         this.drawRooms(tree);
     }
 
