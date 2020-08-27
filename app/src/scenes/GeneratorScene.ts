@@ -176,10 +176,6 @@ export class GeneratorScene extends Phaser.Scene {
                 roomWidth, roomHeight,
                 0xFFFFFF
             );
-            this.add.text(
-                roomCenterX + 10, roomCenterY,
-                roomY + '(' + roomCenterY + ')'
-            ).setFontSize(10).setColor('black');
 
             tree.room = new Room(roomX, roomY, roomWidth, roomHeight);
         }
