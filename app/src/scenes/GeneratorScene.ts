@@ -1,5 +1,19 @@
 import * as Phaser from "phaser";
 
+class Corridor {
+    public x: number; // положение внутри зоны
+    public y: number; // положение внутри зоны
+    public width: number; // ширина комнаты внутри зоны
+    public height: number; // высота комнаты внутри зоны
+
+    constructor(x: number, y: number, width: number, height: number)
+    {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+}
 class Room {
     public x: number; // положение внутри зоны
     public y: number; // положение внутри зоны
@@ -62,7 +76,7 @@ export class GeneratorScene extends Phaser.Scene {
     }
 
     public create() {
-        let tree = this.generate(new Tree(500,400));
+        let tree = this.generate(new Tree(450,350));
         this.drawRooms(tree);
     }
 
@@ -176,55 +190,75 @@ export class GeneratorScene extends Phaser.Scene {
 
             // у нас только топ комната без комнаты?
             if (tree.left.room instanceof Room && tree.right.room instanceof Room) {
-                // TODO: нарисовать коридор посередине. Как вычислить?
-                // Тип разделения - сравним координаты x и y у зон
-                if (tree.left.x === tree.right.x) {
-                    // вертикальное разделение - коридор рисуем вертикально
 
-                    // теперь нужно получить координаты стен которые будем соединять
-                    // коридором
-                    let minCorridorSize = 10;
-                    let corridorX, corridorY, corridorWidth, corridorHeight;
-                    if (tree.left.room.y < tree.right.room.y) {
-                        // вычисляем позицию и размеры коридора между комнатами
-                        corridorWidth = minCorridorSize;
-                        let leftRoomBottomY = tree.left.y + tree.left.room.y + tree.left.room.height;
-                        let rightRoomTopY = (tree.right.y + tree.right.room.y);
-                        // смещение центра коридора по Y, чтобы попасть на обе комнаты
-                        corridorHeight = rightRoomTopY - leftRoomBottomY;
-
-                        corridorY = leftRoomBottomY + (corridorHeight / 2);
-                        corridorX = (tree.width / 2) - minCorridorSize;
-
-                        this.add.rectangle(
-                            tree.x + (tree.width / 2), tree.y + corridorY,
-                            corridorWidth, corridorHeight,
-                            0xFFFF00
-                        );
-                        this.add.text(
-                            tree.x + (tree.width / 2) + 20, tree.y + corridorY,
-                            (rightRoomTopY - tree.right.y) + ' - ' +  (tree.right.y - leftRoomBottomY)
-                        ).setFontSize(10);
-
-                    } else {
-                        // // вычисляем позицию и размеры коридора между комнатами
-                        // corridorY = tree.right.room.y + tree.right.room.height;
-                        // corridorX = (tree.width / 2) - minCorridorSize;
-                        // corridorWidth = minCorridorSize;
-                        // corridorHeight = tree.left.room.y - corridorY;
-                        //
-                        // this.add.rectangle(
-                        //     tree.x + (tree.width / 2), tree.y + corridorY,
-                        //     corridorWidth, corridorHeight,
-                        //     0xFFFF00
-                        // )
-                    }
-
-
-                } else if (tree.left.y === tree.right.y) {
-                    // горизонтальное разделение - коридор рисуем горизонтально
+                let corridor = this.getCorridor(tree.left, tree.right);
+                if (corridor instanceof Corridor) {
+                    this.add.rectangle(
+                        tree.x + corridor.x, tree.y + corridor.y,
+                        corridor.width, corridor.height,
+                        0xFF0000,
+                        0.5
+                    );
                 }
             }
         }
+    }
+
+    private getCorridor(treeNode1: Tree, treeNode2: Tree): Corridor|null
+    {
+        let minCorridorSize = 10;
+        let corridorX, corridorY, corridorWidth, corridorHeight;
+        // Тип разделения - сравним координаты x и y у зон
+        if (treeNode1.x === treeNode2.x) {
+            // вертикальное разделение - коридор рисуем вертикально
+            let top, bottom;
+            if (treeNode1.y < treeNode2.y) {
+                top = treeNode1;
+                bottom = treeNode2;
+            } else {
+                top = treeNode2;
+                bottom = treeNode1;
+            }
+
+            // вычисляем позицию и размеры коридора между комнатами
+            corridorWidth = minCorridorSize;
+            let topRoomBottomY = top.y + top.room.y + top.room.height;
+            let bottomRoomTopY = (bottom.y + bottom.room.y);
+            // смещение центра коридора по Y, чтобы попасть на обе комнаты
+            corridorHeight = Math.max(bottomRoomTopY, topRoomBottomY) - Math.min(bottomRoomTopY, topRoomBottomY);
+            corridorY = top.room.y + top.room.height + (corridorHeight / 2);
+
+            let topRoomCenterX = top.room.x + top.room.width / 2;
+            let bottomRoomCenterX = bottom.room.x + bottom.room.width / 2;
+            let centerDiffX = Math.abs(topRoomCenterX - bottomRoomCenterX);
+
+            corridorX = Math.min(topRoomCenterX, bottomRoomCenterX) + centerDiffX / 2;
+        } else {
+            // горизонтальное разделение - коридор горизонтальный
+            let left, right;
+            if (treeNode1.x < treeNode2.x) {
+                left = treeNode1;
+                right = treeNode2;
+            } else {
+                left = treeNode2;
+                right = treeNode1;
+            }
+
+            // вычисляем позицию и размеры коридора между комнатами
+            corridorHeight = minCorridorSize;
+            let leftRoomRightX = left.x + left.room.x + left.room.width;
+            let rightRoomLeftX = (right.x + right.room.x);
+            // смещение центра коридора по X, чтобы попасть на обе комнаты
+            corridorWidth = Math.max(rightRoomLeftX, leftRoomRightX) - Math.min(rightRoomLeftX, leftRoomRightX);
+            corridorX = left.room.x + left.room.width + (corridorWidth / 2);
+
+            let leftRoomCenterY = left.room.y + left.room.height / 2;
+            let rightRoomCenterY = right.room.y + right.room.height / 2;
+            let centerDiffY = Math.abs(leftRoomCenterY - rightRoomCenterY);
+
+            corridorY = Math.min(leftRoomCenterY, rightRoomCenterY) + centerDiffY / 2;
+        }
+
+        return new Corridor(corridorX, corridorY, corridorWidth, corridorHeight);
     }
 }
