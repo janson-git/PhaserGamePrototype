@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 
 class Corridor {
+    public id: string;
     public x: number; // положение внутри зоны
     public y: number; // положение внутри зоны
     public width: number; // ширина комнаты внутри зоны
@@ -15,6 +16,7 @@ class Corridor {
     }
 }
 class Room {
+    public id: string;
     public x: number; // положение внутри зоны
     public y: number; // положение внутри зоны
     public width: number; // ширина комнаты внутри зоны
@@ -29,6 +31,8 @@ class Room {
     }
 }
 class Tree {
+    public id: string;
+
     public x: number;
     public y: number;
     public width: number;
@@ -44,6 +48,59 @@ class Tree {
         this.height = height;
         this.x = 0;
         this.y = 0;
+    }
+
+    /**
+     * Берёт из узла или собственную комнату или одну из комнат его дочерних узлов
+     */
+    public getRoom(): Room|null
+    {
+        if (this.room instanceof Room) {
+            return this.room;
+        }
+
+        let leftRoom: Room,
+            rightRoom: Room;
+
+        if (this.left instanceof Tree) {
+            leftRoom = this.left.getRoom();
+        }
+        if (this.left instanceof Tree) {
+            rightRoom = this.right.getRoom();
+        }
+
+        if (leftRoom === null && rightRoom === null) {
+            return null;
+        }
+        if (leftRoom !== null || rightRoom !== null) {
+            return leftRoom === null ? rightRoom : leftRoom;
+        }
+
+        // если есть обе комнаты, всегда возвращаем левую
+        return leftRoom;
+    }
+}
+
+class KeyGenerator {
+    private static key: number = 1;
+    private static prefixedKeys: object = {};
+
+    public static getNextKey(prefix?: string): string
+    {
+        let keyToReturn: string;
+        if (prefix === undefined) {
+            keyToReturn = '' + KeyGenerator.key;
+            KeyGenerator.key++;
+            return keyToReturn;
+        }
+
+        if (!KeyGenerator.prefixedKeys.hasOwnProperty(prefix)) {
+            KeyGenerator.prefixedKeys[prefix] = 1;
+        }
+        keyToReturn = prefix + KeyGenerator.prefixedKeys[prefix];
+        KeyGenerator.prefixedKeys[prefix]++;
+
+        return keyToReturn;
     }
 }
 
@@ -76,7 +133,9 @@ export class GeneratorScene extends Phaser.Scene {
     }
 
     public create() {
-        let tree = this.generate(new Tree(500,400));
+        let startTree = new Tree(500,400);
+        startTree.id = 'T' + KeyGenerator.getNextKey();
+        let tree = this.generate(startTree);
         this.drawRooms(tree);
     }
 
@@ -102,6 +161,10 @@ export class GeneratorScene extends Phaser.Scene {
 
     private generate(tree: Tree) {
         let splitType;
+        // если не делится, просто возвращаемся сразу
+        if (tree.width < this.MAX && tree.height < this.MAX) {
+            return tree;
+        }
         if (tree.width > this.MAX && tree.height > this.MAX) {
             splitType = this.getRandomSplit();
         } else {
@@ -134,6 +197,9 @@ export class GeneratorScene extends Phaser.Scene {
             }
         }
 
+        leftTree.id = 'T' + KeyGenerator.getNextKey();
+        rightTree.id = 'T' + KeyGenerator.getNextKey();
+
         if (leftTree instanceof Tree) {
             tree.left = this.generate(leftTree);
         }
@@ -149,14 +215,18 @@ export class GeneratorScene extends Phaser.Scene {
         let centerY = tree.y + (tree.height/2);
 
         // отрисуем зону
-        this.add.rectangle(
-            centerX, centerY,
-            tree.width - 2, tree.height - 2,
-            0x000000,
-            .2
-        );
+        // this.add.rectangle(
+        //     centerX, centerY,
+        //     tree.width - 2, tree.height - 2,
+        //     0x000000,
+        //     .2
+        // );
+        // this.add.text(
+        //     tree.x, tree.y,
+        //     `${tree.id}`
+        // ).setColor('yellow').setFontSize(10);
 
-        if (!(tree.left instanceof Tree) && !(tree.right instanceof Tree)) {
+        if (!(tree.left instanceof Tree && tree.right instanceof Tree)) {
             // отрисуем "комнату" в зоне. Комнаты должны быть меньше от 10 до 30% чем ячейка
             // минимальный размер комнаты - 60% от зоны
             let minWidth = tree.width / 100 * this.MIN_ROOM_SIZE;
@@ -168,6 +238,10 @@ export class GeneratorScene extends Phaser.Scene {
             let roomWidth = this.getRandomIntegerBetween(minWidth, tree.width - roomX - this.MIN_ROOM_MARGIN);
             let roomHeight = this.getRandomIntegerBetween(minHeight, tree.height - roomY - this.MIN_ROOM_MARGIN);
 
+            // отрисуем комнату
+            tree.room = new Room(roomX, roomY, roomWidth, roomHeight);
+            tree.room.id = 'R' + KeyGenerator.getNextKey();
+
             // реальные координаты размещения на холсте
             let roomCenterX = tree.x + (roomWidth / 2) + roomX;
             let roomCenterY = tree.y + (roomHeight / 2) + roomY;
@@ -176,8 +250,10 @@ export class GeneratorScene extends Phaser.Scene {
                 roomWidth, roomHeight,
                 0xFFFFFF
             );
-
-            tree.room = new Room(roomX, roomY, roomWidth, roomHeight);
+            // this.add.text(
+            //     tree.x + roomX, tree.y + roomY,
+            //     `${tree.room.id}`
+            // ).setColor('green').setFontSize(10);
         }
 
         if (tree.left instanceof Tree && tree.right instanceof Tree) {
@@ -185,24 +261,29 @@ export class GeneratorScene extends Phaser.Scene {
             this.drawRooms(tree.right);
 
             // у нас только топ комната без комнаты?
-            if (tree.left.room instanceof Room && tree.right.room instanceof Room) {
+            //if (tree.left.room instanceof Room && tree.right.room instanceof Room) {
 
                 let corridor = this.getCorridor(tree.left, tree.right);
+                console.log(corridor);
                 if (corridor instanceof Corridor) {
                     this.add.rectangle(
                         tree.x + corridor.x, tree.y + corridor.y,
                         corridor.width, corridor.height,
-                        0xFF0000,
-                        0.5
+                        0xFFFFFF
                     );
+                    // this.add.text(
+                    //     tree.x + corridor.x, tree.y + corridor.y,
+                    //     corridor.id
+                    // ).setColor('black').setFontSize(10).setBackgroundColor('yellow');
                 }
-            }
+            // }
         }
     }
 
     private getCorridor(treeNode1: Tree, treeNode2: Tree): Corridor|null
     {
         let minCorridorSize = 10;
+        let corridorId;
         let corridorX, corridorY, corridorWidth, corridorHeight;
         // Тип разделения - сравним координаты x и y у зон
         if (treeNode1.x === treeNode2.x) {
@@ -216,19 +297,23 @@ export class GeneratorScene extends Phaser.Scene {
                 bottom = treeNode1;
             }
 
+            let topRoom = top.getRoom();
+            let bottomRoom = bottom.getRoom();
+
             // вычисляем позицию и размеры коридора между комнатами
             corridorWidth = minCorridorSize;
-            let topRoomBottomY = top.y + top.room.y + top.room.height;
-            let bottomRoomTopY = (bottom.y + bottom.room.y);
+            let topRoomBottomY = top.y + topRoom.y + topRoom.height;
+            let bottomRoomTopY = (bottom.y + bottomRoom.y);
             // смещение центра коридора по Y, чтобы попасть на обе комнаты
             corridorHeight = Math.max(bottomRoomTopY, topRoomBottomY) - Math.min(bottomRoomTopY, topRoomBottomY);
-            corridorY = top.room.y + top.room.height + (corridorHeight / 2);
+            corridorY = topRoom.y + topRoom.height + (corridorHeight / 2);
 
-            let topRoomCenterX = top.room.x + top.room.width / 2;
-            let bottomRoomCenterX = bottom.room.x + bottom.room.width / 2;
+            let topRoomCenterX = topRoom.x + topRoom.width / 2;
+            let bottomRoomCenterX = bottomRoom.x + bottomRoom.width / 2;
             let centerDiffX = Math.abs(topRoomCenterX - bottomRoomCenterX);
 
             corridorX = Math.min(topRoomCenterX, bottomRoomCenterX) + centerDiffX / 2;
+            corridorId = topRoom.id + bottomRoom.id;
         } else {
             // горизонтальное разделение - коридор горизонтальный
             let left, right;
@@ -240,21 +325,28 @@ export class GeneratorScene extends Phaser.Scene {
                 right = treeNode1;
             }
 
+            let leftRoom = left.getRoom();
+            let rightRoom = right.getRoom();
+
             // вычисляем позицию и размеры коридора между комнатами
             corridorHeight = minCorridorSize;
-            let leftRoomRightX = left.x + left.room.x + left.room.width;
-            let rightRoomLeftX = (right.x + right.room.x);
+            let leftRoomRightX = left.x + leftRoom.x + leftRoom.width;
+            let rightRoomLeftX = (right.x + rightRoom.x);
             // смещение центра коридора по X, чтобы попасть на обе комнаты
             corridorWidth = Math.max(rightRoomLeftX, leftRoomRightX) - Math.min(rightRoomLeftX, leftRoomRightX);
-            corridorX = left.room.x + left.room.width + (corridorWidth / 2);
+            corridorX = leftRoom.x + leftRoom.width + (corridorWidth / 2);
 
-            let leftRoomCenterY = left.room.y + left.room.height / 2;
-            let rightRoomCenterY = right.room.y + right.room.height / 2;
+            let leftRoomCenterY = leftRoom.y + leftRoom.height / 2;
+            let rightRoomCenterY = rightRoom.y + rightRoom.height / 2;
             let centerDiffY = Math.abs(leftRoomCenterY - rightRoomCenterY);
 
             corridorY = Math.min(leftRoomCenterY, rightRoomCenterY) + centerDiffY / 2;
+            corridorId = leftRoom.id + rightRoom.id;
         }
 
-        return new Corridor(corridorX, corridorY, corridorWidth, corridorHeight);
+        let c = new Corridor(corridorX, corridorY, corridorWidth, corridorHeight);
+        c.id = corridorId;
+
+        return c;
     }
 }

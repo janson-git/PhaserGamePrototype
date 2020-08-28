@@ -24,7 +24,7 @@ window.onload = function() {
         },
         scene: [GeneratorScene, HelloScene, GameScene],
         parent: 'game',
-        backgroundColor: '#aaaaff',
+        backgroundColor: '#000000',
     };
 
     game = new Phaser.Game(gameConfig);
