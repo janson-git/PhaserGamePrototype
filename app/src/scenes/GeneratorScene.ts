@@ -169,11 +169,6 @@ export class GeneratorScene extends Phaser.Scene {
         return Math.floor((Math.random() * (to - from + 1)) + from);
     }
 
-    private getRandomSplit() : string {
-        let array = ['vertical', 'horizontal'];
-        return array[Math.floor(Math.random() * array.length)];
-    }
-
     private getSplitSizes(size) : Array<number> {
         let splitMin = size / 100 * this.SPLIT_FROM;
         let splitMax = size / 100 * this.SPLIT_TO;
@@ -188,7 +183,9 @@ export class GeneratorScene extends Phaser.Scene {
             return tree;
         }
         if (tree.width > this.MAX && tree.height > this.MAX) {
-            splitType = this.getRandomSplit();
+            // get random split type
+            let array = ['vertical', 'horizontal'];
+            splitType = array[Math.floor(Math.random() * array.length)];
         } else {
             splitType = tree.width > this.MAX ? 'vertical' : 'horizontal';
         }
