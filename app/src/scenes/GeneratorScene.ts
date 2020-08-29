@@ -21,6 +21,7 @@ class Room {
     public y: number; // положение внутри зоны
     public width: number; // ширина комнаты внутри зоны
     public height: number; // высота комнаты внутри зоны
+    public tree: Tree; // ссылка на зону, в которой отрисована комната
 
     constructor(x: number, y: number, width: number, height: number)
     {
@@ -105,11 +106,14 @@ class KeyGenerator {
 }
 
 export class GeneratorScene extends Phaser.Scene {
-    private MAX: number;
-    private MIN_ROOM_SIZE: number;
-    private MIN_ROOM_MARGIN: number;
-    private SPLIT_FROM: number;
-    private SPLIT_TO: number;
+    private readonly MAX: number;
+    private readonly MIN_ROOM_SIZE: number;
+    private readonly MIN_ROOM_MARGIN: number;
+    private readonly SPLIT_FROM: number;
+    private readonly SPLIT_TO: number;
+
+    private rooms: Room[];
+    private corridors: Corridor[];
 
     constructor() {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -127,6 +131,9 @@ export class GeneratorScene extends Phaser.Scene {
         this.MIN_ROOM_MARGIN = 10; // комната не должна быть к краю зоны ближе чем это значение
         this.SPLIT_FROM = 30; // ограничение по разделению на зоны, не ближе чем 30% от одной стены
         this.SPLIT_TO = 70; // ограничение по разделению на зоны, не ближе чем 70% от другой стены
+
+        this.rooms = [];
+        this.corridors = [];
     }
 
     public preload() {
@@ -137,6 +144,21 @@ export class GeneratorScene extends Phaser.Scene {
         startTree.id = 'T' + KeyGenerator.getNextKey();
         let tree = this.generate(startTree);
         this.drawRooms(tree);
+
+        // и теперь для всех комнат и коридоров для дебага можно отрисовать их метки
+        // поверх уже нарисованной карты
+        this.rooms.forEach((room: Room) => {
+            this.add.text(
+                room.x, room.y,
+                `${room.id}`
+            ).setColor('green').setFontSize(10);
+        });
+        this.corridors.forEach((corridor: Corridor) => {
+            this.add.text(
+                corridor.x + corridor.width / 2, corridor.y + corridor.height / 2,
+                `${corridor.id}`
+            ).setColor('black').setBackgroundColor('yellow').setFontSize(10);
+        });
     }
 
     public update(time, delta) {
@@ -211,12 +233,9 @@ export class GeneratorScene extends Phaser.Scene {
 
     // отображаем зоны и рисуем комнаты в них
     private drawRooms(tree: Tree) {
-        let centerX = tree.x + (tree.width/2);
-        let centerY = tree.y + (tree.height/2);
-
         // отрисуем зону
         // this.add.rectangle(
-        //     centerX, centerY,
+        //     tree.x + (tree.width/2), tree.y + (tree.height/2),
         //     tree.width - 2, tree.height - 2,
         //     0x000000,
         //     .2
@@ -232,51 +251,43 @@ export class GeneratorScene extends Phaser.Scene {
             let minWidth = tree.width / 100 * this.MIN_ROOM_SIZE;
             let minHeight = tree.height / 100 * this.MIN_ROOM_SIZE;
 
-            let roomX = this.getRandomIntegerBetween(this.MIN_ROOM_MARGIN, tree.width - minWidth);
-            let roomY = this.getRandomIntegerBetween(this.MIN_ROOM_MARGIN, tree.height - minHeight);
+            let roomOffsetX = this.getRandomIntegerBetween(this.MIN_ROOM_MARGIN, tree.width - minWidth);
+            let roomOffsetY = this.getRandomIntegerBetween(this.MIN_ROOM_MARGIN, tree.height - minHeight);
 
-            let roomWidth = this.getRandomIntegerBetween(minWidth, tree.width - roomX - this.MIN_ROOM_MARGIN);
-            let roomHeight = this.getRandomIntegerBetween(minHeight, tree.height - roomY - this.MIN_ROOM_MARGIN);
+            let roomWidth = this.getRandomIntegerBetween(minWidth, tree.width - roomOffsetX - this.MIN_ROOM_MARGIN);
+            let roomHeight = this.getRandomIntegerBetween(minHeight, tree.height - roomOffsetY - this.MIN_ROOM_MARGIN);
 
-            // отрисуем комнату
+            // создаём комнату с реальными x и y на холсте
+            let roomX = tree.x + roomOffsetX;
+            let roomY = tree.y + roomOffsetY;
             tree.room = new Room(roomX, roomY, roomWidth, roomHeight);
-            tree.room.id = 'R' + KeyGenerator.getNextKey();
+            tree.room.tree = tree;
+            tree.room.id = KeyGenerator.getNextKey('R');
 
-            // реальные координаты размещения на холсте
-            let roomCenterX = tree.x + (roomWidth / 2) + roomX;
-            let roomCenterY = tree.y + (roomHeight / 2) + roomY;
+            this.rooms.push(tree.room);
+
+            // при отрисовке на поле, позиционирование происходит по центру спрайта/фигуры
             this.add.rectangle(
-                roomCenterX, roomCenterY,
+                roomX + (roomWidth / 2), roomY + (roomHeight / 2),
                 roomWidth, roomHeight,
                 0xFFFFFF
             );
-            // this.add.text(
-            //     tree.x + roomX, tree.y + roomY,
-            //     `${tree.room.id}`
-            // ).setColor('green').setFontSize(10);
         }
 
         if (tree.left instanceof Tree && tree.right instanceof Tree) {
             this.drawRooms(tree.left);
             this.drawRooms(tree.right);
 
-            // у нас только топ комната без комнаты?
-            //if (tree.left.room instanceof Room && tree.right.room instanceof Room) {
+            let corridor = this.getCorridor(tree.left, tree.right);
+            if (corridor instanceof Corridor) {
+                this.corridors.push(corridor);
 
-                let corridor = this.getCorridor(tree.left, tree.right);
-                console.log(corridor);
-                if (corridor instanceof Corridor) {
-                    this.add.rectangle(
-                        tree.x + corridor.x, tree.y + corridor.y,
-                        corridor.width, corridor.height,
-                        0xFFFFFF
-                    );
-                    // this.add.text(
-                    //     tree.x + corridor.x, tree.y + corridor.y,
-                    //     corridor.id
-                    // ).setColor('black').setFontSize(10).setBackgroundColor('yellow');
-                }
-            // }
+                this.add.rectangle(
+                    corridor.x + (corridor.width / 2), corridor.y + (corridor.height / 2),
+                    corridor.width, corridor.height,
+                    0xFFFFFF
+                );
+            }
         }
     }
 
@@ -302,8 +313,8 @@ export class GeneratorScene extends Phaser.Scene {
 
             // вычисляем позицию и размеры коридора между комнатами
             corridorWidth = minCorridorSize;
-            let topRoomBottomY = top.y + topRoom.y + topRoom.height;
-            let bottomRoomTopY = (bottom.y + bottomRoom.y);
+            let topRoomBottomY = topRoom.y + topRoom.height;
+            let bottomRoomTopY = bottomRoom.y;
             // смещение центра коридора по Y, чтобы попасть на обе комнаты
             corridorHeight = Math.max(bottomRoomTopY, topRoomBottomY) - Math.min(bottomRoomTopY, topRoomBottomY);
             corridorY = topRoom.y + topRoom.height + (corridorHeight / 2);
@@ -330,8 +341,8 @@ export class GeneratorScene extends Phaser.Scene {
 
             // вычисляем позицию и размеры коридора между комнатами
             corridorHeight = minCorridorSize;
-            let leftRoomRightX = left.x + leftRoom.x + leftRoom.width;
-            let rightRoomLeftX = (right.x + rightRoom.x);
+            let leftRoomRightX = leftRoom.x + leftRoom.width;
+            let rightRoomLeftX = (rightRoom.x);
             // смещение центра коридора по X, чтобы попасть на обе комнаты
             corridorWidth = Math.max(rightRoomLeftX, leftRoomRightX) - Math.min(rightRoomLeftX, leftRoomRightX);
             corridorX = leftRoom.x + leftRoom.width + (corridorWidth / 2);
@@ -344,7 +355,7 @@ export class GeneratorScene extends Phaser.Scene {
             corridorId = leftRoom.id + rightRoom.id;
         }
 
-        let c = new Corridor(corridorX, corridorY, corridorWidth, corridorHeight);
+        let c = new Corridor(corridorX - corridorWidth / 2, corridorY - corridorHeight / 2, corridorWidth, corridorHeight);
         c.id = corridorId;
 
         return c;
