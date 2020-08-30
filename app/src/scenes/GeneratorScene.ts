@@ -104,6 +104,12 @@ class KeyGenerator {
 
         return keyToReturn;
     }
+
+    public static resetAll(): void
+    {
+        KeyGenerator.key = 1;
+        KeyGenerator.prefixedKeys = {};
+    }
 }
 
 export class GeneratorScene extends Phaser.Scene {
@@ -164,6 +170,7 @@ export class GeneratorScene extends Phaser.Scene {
     public restartScene() {
         this.rooms = [];
         this.corridors = [];
+        KeyGenerator.resetAll();
 
         this.scene.restart();
     }
@@ -180,7 +187,9 @@ export class GeneratorScene extends Phaser.Scene {
 
 
     private generateNewMap() {
-        let startTree = new Tree(500,400);
+        let startTree = new Tree(480,380);
+        startTree.x = 10;
+        startTree.y = 10;
         startTree.id = 'T' + KeyGenerator.getNextKey();
         let tree = this.generate(startTree);
         this.drawRooms(tree);
@@ -254,13 +263,12 @@ export class GeneratorScene extends Phaser.Scene {
             }
         }
 
-        leftTree.id = 'T' + KeyGenerator.getNextKey();
-        rightTree.id = 'T' + KeyGenerator.getNextKey();
-
         if (leftTree instanceof Tree) {
+            leftTree.id = 'T' + KeyGenerator.getNextKey();
             tree.left = this.generate(leftTree);
         }
         if (rightTree instanceof Tree) {
+            rightTree.id = 'T' + KeyGenerator.getNextKey();
             tree.right = this.generate(rightTree);
         }
         return tree;
@@ -272,7 +280,7 @@ export class GeneratorScene extends Phaser.Scene {
         // this.add.rectangle(
         //     tree.x + (tree.width/2), tree.y + (tree.height/2),
         //     tree.width - 2, tree.height - 2,
-        //     0x000000,
+        //     0x0000FF,
         //     .2
         // );
         // this.add.text(
@@ -360,6 +368,14 @@ export class GeneratorScene extends Phaser.Scene {
 
             corridorX = Math.min(topRoomCenterX, bottomRoomCenterX) + centerDiffX / 2;
             corridorId = topRoom.id + bottomRoom.id;
+
+            let newCoord = this.checkAndUpdateCorridorCoords(
+                corridorX, corridorWidth,
+                topRoom.x, topRoom.width,
+                bottomRoom.x, bottomRoom.width,
+            );
+            corridorX = newCoord.coord;
+            corridorWidth = newCoord.size;
         } else {
             // горизонтальное разделение - коридор горизонтальный
             let left, right;
@@ -388,11 +404,51 @@ export class GeneratorScene extends Phaser.Scene {
 
             corridorY = Math.min(leftRoomCenterY, rightRoomCenterY) + centerDiffY / 2;
             corridorId = leftRoom.id + rightRoom.id;
+
+            let newCoord = this.checkAndUpdateCorridorCoords(
+                corridorY, corridorHeight,
+                leftRoom.y, leftRoom.height,
+                rightRoom.y, rightRoom.height,
+            );
+            corridorY = newCoord.coord;
+            corridorHeight = newCoord.size;
         }
 
         let c = new Corridor(corridorX - corridorWidth / 2, corridorY - corridorHeight / 2, corridorWidth, corridorHeight);
         c.id = corridorId;
 
         return c;
+    }
+
+    private checkAndUpdateCorridorCoords(originCoord, originSize, coordRoom1, sizeRoom1, coordRoom2, sizeRoom2): {coord: number, size: number}
+    {
+// проверим - попал ли коридор на комнаты. Вдруг он сместился, нужно подвинуть
+        let coordMin = originCoord - originSize / 2;
+        let coordMax = originCoord + originSize / 2;
+
+        let newCorridorMaxX = coordMax,
+            newCorridorMinX =  coordMin;
+
+        if (coordMax > (coordRoom1 + sizeRoom1)) {
+            newCorridorMaxX = (coordRoom1 + sizeRoom1);
+        }
+        if (coordMax > (coordRoom2 + sizeRoom2)) {
+            newCorridorMaxX = (coordRoom2 + sizeRoom2);
+        }
+        if (coordMin < (coordRoom1)) {
+            newCorridorMinX = coordRoom1;
+        }
+        if (coordMin < coordRoom2) {
+            newCorridorMinX = coordRoom2;
+        }
+        // исправим положение коридора
+        if (originCoord < (newCorridorMinX + originSize / 2)){
+            originCoord = newCorridorMinX + originSize / 2;
+        }
+        if (originCoord > (newCorridorMaxX - originSize / 2)) {
+            originCoord = (newCorridorMaxX - originSize / 2);
+        }
+
+        return {coord: originCoord, size: originSize};
     }
 }
