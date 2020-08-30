@@ -119,6 +119,7 @@ export class GeneratorScene extends Phaser.Scene {
     private readonly SPLIT_FROM: number;
     private readonly SPLIT_TO: number;
 
+    private zones: Tree[];
     private rooms: Room[];
     private corridors: Corridor[];
     private debugMarks: Phaser.GameObjects.Text[];
@@ -143,6 +144,7 @@ export class GeneratorScene extends Phaser.Scene {
         this.SPLIT_FROM = 30; // ограничение по разделению на зоны, не ближе чем 30% от одной стены
         this.SPLIT_TO = 70; // ограничение по разделению на зоны, не ближе чем 70% от другой стены
 
+        this.zones = [];
         this.rooms = [];
         this.corridors = [];
         this.debugMarks = [];
@@ -191,23 +193,55 @@ export class GeneratorScene extends Phaser.Scene {
         startTree.x = 10;
         startTree.y = 10;
         startTree.id = 'T' + KeyGenerator.getNextKey();
+        this.zones.push(startTree);
+
+        // сгенерируем дерево
         let tree = this.generate(startTree);
-        this.drawRooms(tree);
+        this.createRooms(tree);
 
         // и теперь для всех комнат и коридоров для дебага можно отрисовать их метки
         // поверх уже нарисованной карты
+        // ЗОНЫ
+        // this.zones.forEach((tree: Tree) => {
+        //     // отрисуем зону
+        //     this.add.rectangle(
+        //         tree.x + (tree.width/2), tree.y + (tree.height/2),
+        //         tree.width - 2, tree.height - 2,
+        //         0x0000FF,
+        //         .2
+        //     );
+        //     this.add.text(
+        //         tree.x, tree.y,
+        //         `${tree.id}`
+        //     ).setColor('yellow').setFontSize(10);
+        // });
+        // КОМНАТЫ
         this.rooms.forEach((room: Room) => {
+            // при отрисовке на поле, позиционирование происходит по центру спрайта/фигуры
+            this.add.rectangle(
+                room.x + (room.width / 2), room.y + (room.height / 2),
+                room.width, room.height,
+                0xFFFFFF
+            );
+
             let mark = this.add.text(
                 room.x, room.y,
                 `${room.id}`
-            ).setColor('green').setFontSize(10).setVisible(this.isDebugMarksVisible);
+            ).setColor('green').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
         });
+        // КОРИДОРЫ
         this.corridors.forEach((corridor: Corridor) => {
+            this.add.rectangle(
+                corridor.x + (corridor.width / 2), corridor.y + (corridor.height / 2),
+                corridor.width, corridor.height,
+                0xFFFFFF
+            );
+
             let mark = this.add.text(
                 corridor.x + corridor.width / 2, corridor.y + corridor.height / 2,
                 `${corridor.id}`
-            ).setColor('black').setBackgroundColor('yellow').setFontSize(10).setVisible(this.isDebugMarksVisible);
+            ).setColor('black').setBackgroundColor('yellow').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
         });
     }
@@ -265,29 +299,19 @@ export class GeneratorScene extends Phaser.Scene {
 
         if (leftTree instanceof Tree) {
             leftTree.id = 'T' + KeyGenerator.getNextKey();
+            this.zones.push(leftTree);
             tree.left = this.generate(leftTree);
         }
         if (rightTree instanceof Tree) {
             rightTree.id = 'T' + KeyGenerator.getNextKey();
+            this.zones.push(rightTree);
             tree.right = this.generate(rightTree);
         }
         return tree;
     }
 
     // отображаем зоны и рисуем комнаты в них
-    private drawRooms(tree: Tree) {
-        // отрисуем зону
-        // this.add.rectangle(
-        //     tree.x + (tree.width/2), tree.y + (tree.height/2),
-        //     tree.width - 2, tree.height - 2,
-        //     0x0000FF,
-        //     .2
-        // );
-        // this.add.text(
-        //     tree.x, tree.y,
-        //     `${tree.id}`
-        // ).setColor('yellow').setFontSize(10);
-
+    private createRooms(tree: Tree) {
         if (!(tree.left instanceof Tree && tree.right instanceof Tree)) {
             // отрисуем "комнату" в зоне. Комнаты должны быть меньше от 10 до 30% чем ячейка
             // минимальный размер комнаты - 60% от зоны
@@ -308,28 +332,15 @@ export class GeneratorScene extends Phaser.Scene {
             tree.room.id = KeyGenerator.getNextKey('R');
 
             this.rooms.push(tree.room);
-
-            // при отрисовке на поле, позиционирование происходит по центру спрайта/фигуры
-            this.add.rectangle(
-                roomX + (roomWidth / 2), roomY + (roomHeight / 2),
-                roomWidth, roomHeight,
-                0xFFFFFF
-            );
         }
 
         if (tree.left instanceof Tree && tree.right instanceof Tree) {
-            this.drawRooms(tree.left);
-            this.drawRooms(tree.right);
+            this.createRooms(tree.left);
+            this.createRooms(tree.right);
 
             let corridor = this.getCorridor(tree.left, tree.right);
             if (corridor instanceof Corridor) {
                 this.corridors.push(corridor);
-
-                this.add.rectangle(
-                    corridor.x + (corridor.width / 2), corridor.y + (corridor.height / 2),
-                    corridor.width, corridor.height,
-                    0xFFFFFF
-                );
             }
         }
     }
@@ -422,7 +433,7 @@ export class GeneratorScene extends Phaser.Scene {
 
     private checkAndUpdateCorridorCoords(originCoord, originSize, coordRoom1, sizeRoom1, coordRoom2, sizeRoom2): {coord: number, size: number}
     {
-// проверим - попал ли коридор на комнаты. Вдруг он сместился, нужно подвинуть
+        // проверим - попал ли коридор на комнаты. Вдруг он сместился, нужно подвинуть
         let coordMin = originCoord - originSize / 2;
         let coordMax = originCoord + originSize / 2;
 
