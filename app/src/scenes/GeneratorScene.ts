@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import TextButton from "../Components/TextButton";
 
 class Corridor {
     public id: string;
@@ -114,6 +115,10 @@ export class GeneratorScene extends Phaser.Scene {
 
     private rooms: Room[];
     private corridors: Corridor[];
+    private debugMarks: Phaser.GameObjects.Text[];
+
+    private generateButton: TextButton;
+    private isDebugMarksVisible: boolean;
 
     constructor() {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -134,12 +139,47 @@ export class GeneratorScene extends Phaser.Scene {
 
         this.rooms = [];
         this.corridors = [];
+        this.debugMarks = [];
     }
 
     public preload() {
     }
 
     public create() {
+        this.generateNewMap();
+
+        // КНОПОЧКИ
+        // кнопочка перегенерации карты
+        this.generateButton = new TextButton(this, 5, 5, 'Generate');
+        this.generateButton.setFontSize(12);
+        this.generateButton.on('pointerdown', () => this.restartScene());
+        this.add.existing(this.generateButton);
+        // кнопочка скрыть/показать метки комнат и корридоров
+        this.generateButton = new TextButton(this, 70, 5, 'Show marks');
+        this.generateButton.setFontSize(12);
+        this.generateButton.on('pointerdown', () => this.toggleMarks());
+        this.add.existing(this.generateButton);
+    }
+
+    public restartScene() {
+        this.rooms = [];
+        this.corridors = [];
+
+        this.scene.restart();
+    }
+
+    public toggleMarks() {
+        this.isDebugMarksVisible = !this.isDebugMarksVisible;
+        this.debugMarks.forEach((mark:Phaser.GameObjects.Text) => {
+            mark.setVisible(this.isDebugMarksVisible);
+        });
+    }
+
+    public update(time, delta) {
+    }
+
+
+    private generateNewMap() {
         let startTree = new Tree(500,400);
         startTree.id = 'T' + KeyGenerator.getNextKey();
         let tree = this.generate(startTree);
@@ -148,22 +188,20 @@ export class GeneratorScene extends Phaser.Scene {
         // и теперь для всех комнат и коридоров для дебага можно отрисовать их метки
         // поверх уже нарисованной карты
         this.rooms.forEach((room: Room) => {
-            this.add.text(
+            let mark = this.add.text(
                 room.x, room.y,
                 `${room.id}`
-            ).setColor('green').setFontSize(10);
+            ).setColor('green').setFontSize(10).setVisible(this.isDebugMarksVisible);
+            this.debugMarks.push(mark);
         });
         this.corridors.forEach((corridor: Corridor) => {
-            this.add.text(
+            let mark = this.add.text(
                 corridor.x + corridor.width / 2, corridor.y + corridor.height / 2,
                 `${corridor.id}`
-            ).setColor('black').setBackgroundColor('yellow').setFontSize(10);
+            ).setColor('black').setBackgroundColor('yellow').setFontSize(10).setVisible(this.isDebugMarksVisible);
+            this.debugMarks.push(mark);
         });
     }
-
-    public update(time, delta) {
-    }
-
 
     private getRandomIntegerBetween(from: number, to: number): number {
         return Math.floor((Math.random() * (to - from + 1)) + from);
