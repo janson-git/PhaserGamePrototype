@@ -167,6 +167,16 @@ export class GeneratorScene extends Phaser.Scene {
         this.generateButton.setFontSize(12);
         this.generateButton.on('pointerdown', () => this.toggleMarks());
         this.add.existing(this.generateButton);
+        // кнопочка скачать скриншот
+        this.generateButton = new TextButton(this, 150, 5, 'Screenshot');
+        this.generateButton.setFontSize(12);
+        this.generateButton.on('pointerdown', () => {
+            this.game.renderer.snapshot(function (image:HTMLImageElement) {
+                // console.log(image);
+                GeneratorScene.exportCanvasAsPNG('snapshot', image.src);
+            });
+        });
+        this.add.existing(this.generateButton);
     }
 
     public restartScene() {
@@ -187,6 +197,17 @@ export class GeneratorScene extends Phaser.Scene {
     public update(time, delta) {
     }
 
+    public static exportCanvasAsPNG(fileName, dataUrl) {
+        var MIME_TYPE = "image/png";
+        var imgURL = dataUrl;
+        var dlLink = document.createElement('a');
+        dlLink.download = fileName;
+        dlLink.href = imgURL;
+        dlLink.dataset.downloadurl = [MIME_TYPE, dlLink.download, dlLink.href].join(':');
+        document.body.appendChild(dlLink);
+        dlLink.click();
+        document.body.removeChild(dlLink);
+    }
 
     private generateNewMap() {
         let startTree = new Tree(480,380);
