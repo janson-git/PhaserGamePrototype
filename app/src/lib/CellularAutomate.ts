@@ -106,7 +106,6 @@ export default class CellularAutomate
         });
 
         this.corridors.forEach((corridor: Corridor) => {
-            console.log(corridor);
             // теперь вокруг коридора заполняем клетками в суперпозиции
             let fillX = corridor.x - ROOM_FILL_MARGIN;
             let fillY = corridor.y - ROOM_FILL_MARGIN;
