@@ -177,17 +177,17 @@ export default class CellularAutomate
             let color: number = 0XFFFFFF;
             switch (value) {
                 case LIVE_CELL:
-                    color = 0xFF00FF;
+                    color = 0xFFFFFF;
                     break;
                 case SO_LIVE_CELL:
-                    color = 0x00FF00;
+                    color = 0xFFFFFF;
                     break;
                 case SO_DEAD_CELL:
-                    color = 0xFF0000;
+                    color = 0x000000;
                     break;
             }
             let point = this.offsetToCoord(index);
-            graphics.fillStyle(color, 0.5);
+            graphics.fillStyle(color, 1);
             graphics.fillPoint(point.x, point.y);
         });
     }
@@ -195,7 +195,48 @@ export default class CellularAutomate
 
     // прогоняет нужное количество итераций по подготовленной карте
     public run(iterations: number = 1) {
-        //
+        // воспользуемся правилом отсюда: http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
+        // 1. клетка становится стеной, если она была стеной и >=4 соседей были стенами
+        // 2. или клетка становится стеной, если она НЕ была стеной и >=5 соседей были стенами
+        let mapSize = this.width * this.height;
+        // для каких клеток есть смысл смотреть на соседей:
+        let minCellIndex = this.width + 2;
+        let maxCellIndex = mapSize - this.width - 2;
+
+        for (let i = minCellIndex; i < maxCellIndex; i++) {
+            if (this.map[i] === DEAD_CELL || this.map[i] === LIVE_CELL) {
+                continue;
+            }
+
+            let isWasWall = this.map[i] === SO_DEAD_CELL;
+
+            // соберём "соседей" клетки на карте из массива
+            let neighbors = [
+                this.map[ i - this.width - 1],
+                this.map[ i - this.width],
+                this.map[ i - this.width + 1],
+                this.map[ i - 1],
+                this.map[ i + 1],
+                this.map[ i + this.width - 1],
+                this.map[ i + this.width],
+                this.map[ i + this.width + 1],
+            ];
+
+            let count = 0;
+            neighbors.forEach((value) => {
+                if (value === DEAD_CELL || value === SO_DEAD_CELL) {
+                    count++;
+                }
+            });
+
+            if ((isWasWall && count >= 4) || (!isWasWall && count >= 5)) {
+                this.map[i] = SO_DEAD_CELL;
+            }
+        }
+
+        if (iterations > 0) {
+            this.run(iterations - 1);
+        }
     }
 
 }

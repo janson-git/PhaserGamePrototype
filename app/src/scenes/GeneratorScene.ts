@@ -50,7 +50,12 @@ export class GeneratorScene extends Phaser.Scene {
     private debugMarks: Phaser.GameObjects.Text[];
 
     private generateButton: TextButton;
+    private showMarksButton: TextButton;
+    private getScreenshotButton: TextButton;
+    private nextIterationButton: TextButton;
     private isDebugMarksVisible: boolean;
+
+    private cellularAutomate: CellularAutomate;
 
     constructor() {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -61,10 +66,10 @@ export class GeneratorScene extends Phaser.Scene {
 
         super(sceneConfig);
 
-        this.MAP_WIDTH = 280;
-        this.MAP_HEIGHT = 280;
+        this.MAP_WIDTH = 480;
+        this.MAP_HEIGHT = 380;
 
-        this.MAX = 170; // максимальный размер зоны - если больше, то можно делить
+        this.MAX = 140; // максимальный размер зоны - если больше, то можно делить
         // минимальный размер комнаты удобно делать больше 50%. Тогда при соединении
         // всегда рисуем коридор посередине и попадаем куда надо :)
         this.MIN_ROOM_SIZE = 60; // в процентах от размера зоны
@@ -91,33 +96,28 @@ export class GeneratorScene extends Phaser.Scene {
         this.generateButton.on('pointerdown', () => this.restartScene());
         this.add.existing(this.generateButton);
         // кнопочка скрыть/показать метки комнат и корридоров
-        this.generateButton = new TextButton(this, 70, 5, 'Show marks');
-        this.generateButton.setFontSize(12);
-        this.generateButton.on('pointerdown', () => this.toggleMarks());
-        this.add.existing(this.generateButton);
+        this.showMarksButton = new TextButton(this, 70, 5, 'Show marks');
+        this.showMarksButton.setFontSize(12);
+        this.showMarksButton.on('pointerdown', () => this.toggleMarks());
+        this.add.existing(this.showMarksButton);
         // кнопочка скачать скриншот
-        this.generateButton = new TextButton(this, 150, 5, 'Screenshot');
-        this.generateButton.setFontSize(12);
-        this.generateButton.on('pointerdown', () => {
+        this.getScreenshotButton = new TextButton(this, 150, 5, 'Screenshot');
+        this.getScreenshotButton.setFontSize(12);
+        this.getScreenshotButton.on('pointerdown', () => {
             this.game.renderer.snapshot(function (image:HTMLImageElement) {
                 // console.log(image);
                 GeneratorScene.exportCanvasAsPNG('snapshot', image.src);
             });
         });
-        this.add.existing(this.generateButton);
+        this.add.existing(this.getScreenshotButton);
 
-        // this.add.graphics({
-        //     lineStyle: {
-        //         width: 1,
-        //         color: 0xFF0000,
-        //         alpha: 1
-        //     },
-        //     fillStyle: {
-        //         color: 0xFF0000,
-        //         alpha: 1
-        //     }
-        // }).fillPoint(100, 100, 5)
-        //     .fillPoint(110, 100);
+        // кнопочка скачать скриншот
+        this.nextIterationButton = new TextButton(this, 250, 5, 'Iterate Map Filter');
+        this.nextIterationButton.setFontSize(12);
+        this.nextIterationButton.on('pointerdown', () => {
+            this.nextCellularAutomateIteration();
+        });
+        this.add.existing(this.nextIterationButton);
     }
 
     public restartScene() {
@@ -206,16 +206,26 @@ export class GeneratorScene extends Phaser.Scene {
             ).setColor('black').setBackgroundColor('yellow').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
         });
+    }
 
-        let cellularAutomate = new CellularAutomate(
-            this.MAP_WIDTH + 20,
-            this.MAP_HEIGHT + 20,
-            this.rooms,
-            this.corridors
-        );
-        cellularAutomate.initializeMap();
-        cellularAutomate.renderMap(this);
-
+    /**
+     * Запускаем итерации клеточного автомата по нашей карте
+     */
+    private nextCellularAutomateIteration() {
+        if (!(this.cellularAutomate instanceof CellularAutomate)) {
+            // init
+            this.cellularAutomate = new CellularAutomate(
+                this.MAP_WIDTH + 20,
+                this.MAP_HEIGHT + 20,
+                this.rooms,
+                this.corridors
+            );
+            this.cellularAutomate.initializeMap();
+            this.cellularAutomate.renderMap(this);
+        } else {
+            this.cellularAutomate.run();
+            this.cellularAutomate.renderMap(this);
+        }
     }
 
     private getRandomIntegerBetween(from: number, to: number): number {
