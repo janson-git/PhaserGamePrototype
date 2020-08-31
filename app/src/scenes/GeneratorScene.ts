@@ -3,6 +3,7 @@ import Tree from "../Components/Tree";
 import Room from "../Components/Room";
 import Corridor from "../Components/Corridor";
 import TextButton from "../Components/TextButton";
+import CellularAutomate from "../lib/CellularAutomate";
 
 class KeyGenerator {
     private static key: number = 1;
@@ -34,6 +35,9 @@ class KeyGenerator {
 }
 
 export class GeneratorScene extends Phaser.Scene {
+    private readonly MAP_WIDTH: number;
+    private readonly MAP_HEIGHT: number;
+
     private readonly MAX: number;
     private readonly MIN_ROOM_SIZE: number;
     private readonly MIN_ROOM_MARGIN: number;
@@ -57,11 +61,14 @@ export class GeneratorScene extends Phaser.Scene {
 
         super(sceneConfig);
 
+        this.MAP_WIDTH = 280;
+        this.MAP_HEIGHT = 280;
+
         this.MAX = 170; // максимальный размер зоны - если больше, то можно делить
         // минимальный размер комнаты удобно делать больше 50%. Тогда при соединении
         // всегда рисуем коридор посередине и попадаем куда надо :)
         this.MIN_ROOM_SIZE = 60; // в процентах от размера зоны
-        this.MIN_ROOM_MARGIN = 15; // комната не должна быть к краю зоны ближе чем это значение
+        this.MIN_ROOM_MARGIN = 20; // комната не должна быть к краю зоны ближе чем это значение
         this.SPLIT_FROM = 30; // ограничение по разделению на зоны, не ближе чем 30% от одной стены
         this.SPLIT_TO = 70; // ограничение по разделению на зоны, не ближе чем 70% от другой стены
 
@@ -98,6 +105,19 @@ export class GeneratorScene extends Phaser.Scene {
             });
         });
         this.add.existing(this.generateButton);
+
+        // this.add.graphics({
+        //     lineStyle: {
+        //         width: 1,
+        //         color: 0xFF0000,
+        //         alpha: 1
+        //     },
+        //     fillStyle: {
+        //         color: 0xFF0000,
+        //         alpha: 1
+        //     }
+        // }).fillPoint(100, 100, 5)
+        //     .fillPoint(110, 100);
     }
 
     public restartScene() {
@@ -131,7 +151,7 @@ export class GeneratorScene extends Phaser.Scene {
     }
 
     private generateNewMap() {
-        let startTree = new Tree(480,380);
+        let startTree = new Tree(this.MAP_WIDTH,this.MAP_HEIGHT);
         startTree.x = 10;
         startTree.y = 10;
         startTree.id = 'T' + KeyGenerator.getNextKey();
@@ -186,6 +206,16 @@ export class GeneratorScene extends Phaser.Scene {
             ).setColor('black').setBackgroundColor('yellow').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
         });
+
+        let cellularAutomate = new CellularAutomate(
+            this.MAP_WIDTH + 20,
+            this.MAP_HEIGHT + 20,
+            this.rooms,
+            this.corridors
+        );
+        cellularAutomate.initializeMap();
+        cellularAutomate.renderMap(this);
+
     }
 
     private getRandomIntegerBetween(from: number, to: number): number {
@@ -252,7 +282,7 @@ export class GeneratorScene extends Phaser.Scene {
         return tree;
     }
 
-    // отображаем зоны и рисуем комнаты в них
+    // Создаём комнаты в зонах
     private createRooms(tree: Tree) {
         if (!(tree.left instanceof Tree && tree.right instanceof Tree)) {
             // отрисуем "комнату" в зоне. Комнаты должны быть меньше от 10 до 30% чем ячейка
@@ -367,7 +397,12 @@ export class GeneratorScene extends Phaser.Scene {
             corridorHeight = newCoord.size;
         }
 
-        let c = new Corridor(corridorX - corridorWidth / 2, corridorY - corridorHeight / 2, corridorWidth, corridorHeight);
+        let c = new Corridor(
+            Math.floor(corridorX - corridorWidth / 2),
+            Math.floor(corridorY - corridorHeight / 2),
+            Math.floor(corridorWidth),
+            Math.floor(corridorHeight)
+        );
         c.id = corridorId;
 
         return c;
