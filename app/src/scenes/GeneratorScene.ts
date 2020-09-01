@@ -71,10 +71,10 @@ export class GeneratorScene extends Phaser.Scene {
         this.MAP_WIDTH = 480;
         this.MAP_HEIGHT = 380;
 
-        this.MAX = 140; // максимальный размер зоны - если больше, то можно делить
+        this.MAX = 120; // максимальный размер зоны - если больше, то можно делить
         // минимальный размер комнаты удобно делать больше 50%. Тогда при соединении
         // всегда рисуем коридор посередине и попадаем куда надо :)
-        this.MIN_ROOM_SIZE = 60; // в процентах от размера зоны
+        this.MIN_ROOM_SIZE = 70; // в процентах от размера зоны
         this.MIN_ROOM_MARGIN = 20; // комната не должна быть к краю зоны ближе чем это значение
         this.SPLIT_FROM = 30; // ограничение по разделению на зоны, не ближе чем 30% от одной стены
         this.SPLIT_TO = 70; // ограничение по разделению на зоны, не ближе чем 70% от другой стены
@@ -334,7 +334,7 @@ export class GeneratorScene extends Phaser.Scene {
 
     private getCorridor(treeNode1: Tree, treeNode2: Tree): Corridor|null
     {
-        let minCorridorSize = 10;
+        let minCorridorSize = 5;
         let corridorId;
         let corridorX, corridorY, corridorWidth, corridorHeight;
         // Тип разделения - сравним координаты x и y у зон

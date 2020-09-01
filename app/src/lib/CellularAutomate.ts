@@ -5,7 +5,6 @@
  */
 import Room from "../Components/Room";
 import Corridor from "../Components/Corridor";
-import Scene = Phaser.Scene;
 import Graphics = Phaser.GameObjects.Graphics;
 
 const SUPER_CELL: number = 9; // клетка в суперпозиции - может принять любое значение
