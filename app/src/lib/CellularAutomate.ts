@@ -194,6 +194,8 @@ export default class CellularAutomate
 
     // прогоняет нужное количество итераций по подготовленной карте
     public run(iterations: number = 1) {
+        iterations--;
+
         // воспользуемся правилом отсюда: http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
         // 1. клетка становится стеной, если она была стеной и >=4 соседей были стенами
         // 2. или клетка становится стеной, если она НЕ была стеной и >=5 соседей были стенами
@@ -240,7 +242,7 @@ export default class CellularAutomate
         // новую карту посчитали, теперь перекладываем её в текущее состояние
         this.map = newMap;
         if (iterations > 0) {
-            this.run(iterations - 1);
+            this.run(iterations);
         }
     }
 

@@ -124,6 +124,7 @@ export class GeneratorScene extends Phaser.Scene {
         this.rooms = [];
         this.corridors = [];
         KeyGenerator.resetAll();
+        this.cellularAutomate = null;
 
         this.scene.restart();
     }
