@@ -22,7 +22,7 @@ window.onload = function() {
                 debug: true,
             },
         },
-        scene: [GeneratorScene, HelloScene, GameScene],
+        scene: [GameScene, GeneratorScene, HelloScene],
         parent: 'game',
         backgroundColor: '#000000',
         render: {

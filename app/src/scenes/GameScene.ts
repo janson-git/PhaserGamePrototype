@@ -25,8 +25,10 @@ export class GameScene extends Phaser.Scene {
             'assets/atlas/redBoatSpriteListConfig.json'
         );
 
-        this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
-        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
+        // this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
+        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
+        this.load.image('tilesExtruded', 'assets/tilemaps/WaterGrassTilesExtruded.png');
+        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap.json');
     }
 
     public create() {
@@ -42,12 +44,12 @@ export class GameScene extends Phaser.Scene {
 
         // TODO: научится бы корректно нужные спрайты для тайлов указывать.
         // TODO: и соответственно - их проверять
-        map.setCollisionBetween(85, 999, true, false, this.layer);
+        map.setCollisionBetween(1, 1, true, false, this.layer);
 
         // let shapeGraphics = this.add.graphics();
         // this.drawCollisionShapes(shapeGraphics);
 
-        this.player = new Player(this, 100, 100);
+        this.player = new Player(this, 200, 250);
 
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.setRoundPixels(true);

@@ -42,6 +42,7 @@ export class GeneratorScene extends Phaser.Scene {
     private readonly MAX: number;
     private readonly MIN_ROOM_SIZE: number;
     private readonly MIN_ROOM_MARGIN: number;
+    private readonly CORRIDOR_WIDTH: number;
     private readonly SPLIT_FROM: number;
     private readonly SPLIT_TO: number;
 
@@ -63,21 +64,22 @@ export class GeneratorScene extends Phaser.Scene {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
             active: false,
             visible: false,
-            key: 'Generator',
+            key: 'Generator'
         };
 
         super(sceneConfig);
 
-        this.MAP_WIDTH = 480;
-        this.MAP_HEIGHT = 380;
+        this.MAP_WIDTH = 120;
+        this.MAP_HEIGHT = 120;
 
-        this.MAX = 120; // максимальный размер зоны - если больше, то можно делить
+        this.MAX = 50; // максимальный размер зоны - если больше, то можно делить
         // минимальный размер комнаты удобно делать больше 50%. Тогда при соединении
         // всегда рисуем коридор посередине и попадаем куда надо :)
         this.MIN_ROOM_SIZE = 70; // в процентах от размера зоны
-        this.MIN_ROOM_MARGIN = 20; // комната не должна быть к краю зоны ближе чем это значение
-        this.SPLIT_FROM = 30; // ограничение по разделению на зоны, не ближе чем 30% от одной стены
-        this.SPLIT_TO = 70; // ограничение по разделению на зоны, не ближе чем 70% от другой стены
+        this.MIN_ROOM_MARGIN = 5; // комната не должна быть к краю зоны ближе чем это значение
+        this.CORRIDOR_WIDTH = 4;
+        this.SPLIT_FROM = 20; // ограничение по разделению на зоны, не ближе чем 30% от одной стены
+        this.SPLIT_TO = 80; // ограничение по разделению на зоны, не ближе чем 70% от другой стены
 
         this.zones = [];
         this.rooms = [];
@@ -113,13 +115,21 @@ export class GeneratorScene extends Phaser.Scene {
         });
         this.add.existing(this.getScreenshotButton);
 
-        // кнопочка скачать скриншот
+        // кнопочка запуска клеточного автомата
         this.nextIterationButton = new TextButton(this, 250, 5, 'Iterate Map Filter');
         this.nextIterationButton.setFontSize(12);
         this.nextIterationButton.on('pointerdown', () => {
             this.nextCellularAutomateIteration();
         });
         this.add.existing(this.nextIterationButton);
+
+        // кнопочка запуска клеточного автомата
+        let getDumpButton = new TextButton(this, 400, 5, 'Get dump')
+            .setFontSize(12)
+            .on('pointerdown', () => {
+                this.getMapDump();
+            });
+        this.add.existing(getDumpButton);
     }
 
     public restartScene() {
@@ -155,8 +165,8 @@ export class GeneratorScene extends Phaser.Scene {
 
     private generateNewMap() {
         let startTree = new Tree(this.MAP_WIDTH,this.MAP_HEIGHT);
-        startTree.x = 10;
-        startTree.y = 10;
+        startTree.x = 0;
+        startTree.y = 0;
         startTree.id = 'T' + KeyGenerator.getNextKey();
         this.zones.push(startTree);
 
@@ -218,8 +228,8 @@ export class GeneratorScene extends Phaser.Scene {
         if (!(this.cellularAutomate instanceof CellularAutomate)) {
             // init
             this.cellularAutomate = new CellularAutomate(
-                this.MAP_WIDTH + 20,
-                this.MAP_HEIGHT + 20,
+                this.MAP_WIDTH,
+                this.MAP_HEIGHT,
                 this.rooms,
                 this.corridors
             );
@@ -231,6 +241,22 @@ export class GeneratorScene extends Phaser.Scene {
             this.graphicsForMap.clear();
             this.cellularAutomate.renderMap(this.graphicsForMap);
         }
+    }
+
+    private getMapDump() {
+        let map = this.cellularAutomate.getMap();
+        console.log('MAP DUMP: ', map.slice(0, 10));
+
+        let textarea: HTMLTextAreaElement = document.getElementById('textarea') as HTMLTextAreaElement;
+        if (!textarea) {
+            textarea = document.createElement('textarea');
+            textarea.setAttribute('id', 'textarea');
+        }
+        textarea.cols = 150;
+        textarea.rows = 10;
+        textarea.value = map.toString();
+
+        document.body.append(textarea);
     }
 
     private getRandomIntegerBetween(from: number, to: number): number {
@@ -334,7 +360,7 @@ export class GeneratorScene extends Phaser.Scene {
 
     private getCorridor(treeNode1: Tree, treeNode2: Tree): Corridor|null
     {
-        let minCorridorSize = 5;
+        let minCorridorSize = this.CORRIDOR_WIDTH;
         let corridorId;
         let corridorX, corridorY, corridorWidth, corridorHeight;
         // Тип разделения - сравним координаты x и y у зон

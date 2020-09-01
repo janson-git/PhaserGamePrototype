@@ -13,8 +13,8 @@ const LIVE_CELL: number = 1; // точно живая. Не изменит со�
 const SO_DEAD_CELL: number = 2; // условно мёртвая. Может изменить состояние на следующем шаге
 const SO_LIVE_CELL: number = 3; // условно живая. --//--
 
-const ZONE_PADDING: number = 5; // незаполняемый промежуток от границы зоны
-const ROOM_FILL_MARGIN = 10; // промежуток вокруг комнаты для заполнения случайными клетками
+const ZONE_PADDING: number = 2; // незаполняемый промежуток от границы зоны
+const ROOM_FILL_MARGIN = 6; // промежуток вокруг комнаты для заполнения случайными клетками
 
 export default class CellularAutomate
 {
@@ -59,6 +59,7 @@ export default class CellularAutomate
         for (let i = 0; i < mapSize; i++) {
             this.map[i] = DEAD_CELL;
         }
+console.log(`Map size: ${mapSize}, h: ${this.height}, w: ${this.width}`);
 
         // Далее проходим по всем комнатам, получаем из них зоны, и пространство вокруг
         // комнаты заполняем клетками в суперпозиции. Аналогично - с коридорами
@@ -199,7 +200,7 @@ export default class CellularAutomate
         // воспользуемся правилом отсюда: http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
         // 1. клетка становится стеной, если она была стеной и >=4 соседей были стенами
         // 2. или клетка становится стеной, если она НЕ была стеной и >=5 соседей были стенами
-        let newMap: number[] = [];
+        let newMap: number[] = this.map;
         let mapSize = this.width * this.height;
         // для каких клеток есть смысл смотреть на соседей:
         let minCellIndex = this.width + 2;
@@ -246,4 +247,29 @@ export default class CellularAutomate
         }
     }
 
+    /**
+     * Возвращает текущее состояние карты в виде массива с двумя типами клеток: мёртвые или живые
+     */
+    public getMap(): Array<number> {
+        let outMap: number[] = [];
+
+        for (let x = 0; x < this.width; x++) {
+            for (let y = 0; y < this.height; y++) {
+                let offset = this.coordToOffset(x, y);
+
+                let cell = this.map[offset];
+
+                let outVal = cell;
+                if (cell === SO_DEAD_CELL) {
+                    outVal = DEAD_CELL;
+                } else if (cell === SO_LIVE_CELL) {
+                    outVal = LIVE_CELL;
+                }
+
+                outMap.push(outVal);
+            }
+        }
+
+        return outMap;
+    }
 }
