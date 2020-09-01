@@ -6,6 +6,7 @@
 import Room from "../Components/Room";
 import Corridor from "../Components/Corridor";
 import Scene = Phaser.Scene;
+import Graphics = Phaser.GameObjects.Graphics;
 
 const SUPER_CELL: number = 9; // клетка в суперпозиции - может принять любое значение
 const DEAD_CELL: number = 0; // точно мёртвая. Не изменит состояние при генерации
@@ -155,8 +156,8 @@ export default class CellularAutomate
 
     }
 
-    public renderMap(scene: Scene) {
-        let graphics = scene.add.graphics().setDefaultStyles({
+    public renderMap(graphics: Graphics) {
+        graphics.setDefaultStyles({
             lineStyle: {
                 width: 1,
                 color: 0xFF0000,

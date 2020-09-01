@@ -25,6 +25,10 @@ window.onload = function() {
         scene: [GeneratorScene, HelloScene, GameScene],
         parent: 'game',
         backgroundColor: '#000000',
+        render: {
+            antialias: false,
+            antialiasGL: false,
+        }
     };
 
     game = new Phaser.Game(gameConfig);

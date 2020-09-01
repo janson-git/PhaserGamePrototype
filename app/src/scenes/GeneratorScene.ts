@@ -4,6 +4,7 @@ import Room from "../Components/Room";
 import Corridor from "../Components/Corridor";
 import TextButton from "../Components/TextButton";
 import CellularAutomate from "../lib/CellularAutomate";
+import Graphics = Phaser.GameObjects.Graphics;
 
 class KeyGenerator {
     private static key: number = 1;
@@ -56,6 +57,7 @@ export class GeneratorScene extends Phaser.Scene {
     private isDebugMarksVisible: boolean;
 
     private cellularAutomate: CellularAutomate;
+    private graphicsForMap: Graphics;
 
     constructor() {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -222,10 +224,12 @@ export class GeneratorScene extends Phaser.Scene {
                 this.corridors
             );
             this.cellularAutomate.initializeMap();
-            this.cellularAutomate.renderMap(this);
+            this.graphicsForMap = this.add.graphics();
+            this.cellularAutomate.renderMap(this.graphicsForMap);
         } else {
             this.cellularAutomate.run();
-            this.cellularAutomate.renderMap(this);
+            this.graphicsForMap.clear();
+            this.cellularAutomate.renderMap(this.graphicsForMap);
         }
     }
 
