@@ -197,6 +197,7 @@ export default class CellularAutomate
         // воспользуемся правилом отсюда: http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
         // 1. клетка становится стеной, если она была стеной и >=4 соседей были стенами
         // 2. или клетка становится стеной, если она НЕ была стеной и >=5 соседей были стенами
+        let newMap: number[] = [];
         let mapSize = this.width * this.height;
         // для каких клеток есть смысл смотреть на соседей:
         let minCellIndex = this.width + 2;
@@ -204,6 +205,7 @@ export default class CellularAutomate
 
         for (let i = minCellIndex; i < maxCellIndex; i++) {
             if (this.map[i] === DEAD_CELL || this.map[i] === LIVE_CELL) {
+                newMap[i] = this.map[i];
                 continue;
             }
 
@@ -229,10 +231,14 @@ export default class CellularAutomate
             });
 
             if ((isWasWall && count >= 4) || (!isWasWall && count >= 5)) {
-                this.map[i] = SO_DEAD_CELL;
+                newMap[i] = SO_DEAD_CELL;
+            } else {
+                newMap[i] = SO_LIVE_CELL;
             }
         }
 
+        // новую карту посчитали, теперь перекладываем её в текущее состояние
+        this.map = newMap;
         if (iterations > 0) {
             this.run(iterations - 1);
         }
