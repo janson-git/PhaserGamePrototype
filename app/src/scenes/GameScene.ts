@@ -27,8 +27,10 @@ export class GameScene extends Phaser.Scene {
 
         // this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
         // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
-        this.load.image('tilesExtruded', 'assets/tilemaps/WaterGrassTilesExtruded.png');
-        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap.json');
+        // this.load.image('tilesExtruded', 'assets/tilemaps/WaterGrassTilesExtruded.png');
+        this.load.image('tilesExtruded16', 'assets/tilemaps/WaterGrassTiles16Extruded.png');
+        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap.json');
+        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap16.json');
     }
 
     public create() {
@@ -36,7 +38,8 @@ export class GameScene extends Phaser.Scene {
 
         // The first parameter is the name of the tileset in Tiled and the second parameter is the key
         // of the tileset image used when loading the file in preload.
-        let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
+        // let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
+        let tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16');
 
         // You can load a layer from the map using the layer name from Tiled, or by using the layer
         // index (0 in this case).
