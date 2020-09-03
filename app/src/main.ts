@@ -12,8 +12,8 @@ window.onload = function() {
         title: 'Sample',
         type: Phaser.AUTO,
         scale: {
-            width: 500,
-            height: 400,
+            width: 800,
+            height: 600,
             autoCenter: Center.CENTER_BOTH
         },
         physics: {
@@ -22,7 +22,7 @@ window.onload = function() {
                 debug: true,
             },
         },
-        scene: [GameScene, GeneratorScene, HelloScene],
+        scene: [HelloScene, GameScene, GeneratorScene],
         parent: 'game',
         backgroundColor: '#000000',
         render: {

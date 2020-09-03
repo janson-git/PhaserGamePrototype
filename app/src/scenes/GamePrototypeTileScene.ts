@@ -3,7 +3,7 @@ import {Player} from "../Player";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 
-export class GameScene extends Phaser.Scene {
+export class GamePrototypeTileScene extends Phaser.Scene {
     private player: GameObjectWithBody;
     private layer: StaticTilemapLayer;
 

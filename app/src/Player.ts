@@ -1,5 +1,4 @@
 import * as Phaser from "phaser";
-import {GameScene} from "./scenes/GameScene";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     protected playerSpriteRotateSize = 11.25; // 11.25 градусов на спрайт
@@ -12,7 +11,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected DECELERATION: number = 50; // m/sec^2
     protected ROTATE_SPEED: number = 90; // Degrees per second
 
-    constructor(scene: GameScene, x: integer, y: integer) {
+    constructor(scene: Phaser.Scene, x: integer, y: integer) {
         super(scene, x, y, 'red_boat');
 
         // добавляем в сцену чтобы спрайт был видим

@@ -2,10 +2,14 @@ import * as Phaser from "phaser";
 import {Player} from "../Player";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
+import MathUtils from "../lib/MathUtils";
 
 export class GameScene extends Phaser.Scene {
     private player: GameObjectWithBody;
     private layer: StaticTilemapLayer;
+    private stars;
+    private collectedStars;
+    private scoreText;
 
     constructor() {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -25,11 +29,11 @@ export class GameScene extends Phaser.Scene {
             'assets/atlas/redBoatSpriteListConfig.json'
         );
 
+        this.load.image('star', 'assets/star24.png');
+
         // this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
         // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
-        // this.load.image('tilesExtruded', 'assets/tilemaps/WaterGrassTilesExtruded.png');
         this.load.image('tilesExtruded16', 'assets/tilemaps/WaterGrassTiles16Extruded.png');
-        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap.json');
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap16.json');
     }
 
@@ -49,14 +53,41 @@ export class GameScene extends Phaser.Scene {
         // TODO: и соответственно - их проверять
         map.setCollisionBetween(1, 1, true, false, this.layer);
 
-        // let shapeGraphics = this.add.graphics();
-        // this.drawCollisionShapes(shapeGraphics);
+        // случайным образом генерим координаты и проверяем:
+        // если tail в этом месте не препятствие, то можно туда ставить звезду
+        this.stars = this.physics.add.group();
+        for (let i = 0; i < 10; i++) {
+            let tileX, tileY, placed = false;
+            do {
+                tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
+                tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
+                let tile = map.getTileAt(tileX, tileY);
+
+                if (tile.canCollide !== true) {
+                    // ставим на поле звёздочку
+                    placed = true;
+                    let coords = map.tileToWorldXY(tileX, tileY);
+                    this.stars.create(coords.x, coords.y, 'star');
+                }
+            } while (placed !== true);
+        }
+
+        console.log('STARS PLACED!');
 
         this.player = new Player(this, 200, 250);
+
+        //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+        this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
 
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.setRoundPixels(true);
         this.cameras.main.startFollow(this.player, true);
+
+        //  The score
+        this.collectedStars = 0;
+        this.scoreText = this.add.text(16, 16, 'Собрано звёзд: 0 из 10', { fontSize: '32px', fill: '#000' });
+        this.scoreText.setScrollFactor(0);
+
     }
 
     public update(time, delta) {
@@ -67,61 +98,33 @@ export class GameScene extends Phaser.Scene {
         this.physics.collide(this.player, this.layer);
     }
 
+    public collectStar (player, star) {
+        star.disableBody(true, true);
 
-    private drawCollisionShapes (graphics)
-    {
-        graphics.clear();
+        //  Add and update the score
+        this.collectedStars += 1;
+        this.scoreText.setText(`Собрано звёзд: ${this.collectedStars} из 10`);
 
-        // Loop over each tile and visualize its collision shape (if it has one)
-        this.layer.forEachTile(function (tile)
-        {
-            var tileWorldX = tile.getLeft();
-            var tileWorldY = tile.getTop();
-            var collisionGroup = tile.getCollisionGroup();
+        if (this.stars.countActive(true) === 0) {
+            this.scoreText.setText(
+                `Собрано звёзд: ${this.collectedStars} из 10`
+            );
+            console.log('ALL STARS COLLECTED!!!');
+            //  A new batch of stars to collect
+            // this.stars.children.iterate(function (child) {
+            //
+            //     child.enableBody(true, child.x, 0, true, true);
+            //
+            // });
 
-            // console.log(collisionGroup);
+            // var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+            //
+            // var bomb = bombs.create(x, 16, 'bomb');
+            // bomb.setBounce(1);
+            // bomb.setCollideWorldBounds(true);
+            // bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+            // bomb.allowGravity = false;
 
-            if (!collisionGroup || collisionGroup.objects.length === 0) { return; }
-
-            // The group will have an array of objects - these are the individual collision shapes
-            var objects = collisionGroup.objects;
-
-            for (var i = 0; i < objects.length; i++)
-            {
-                var object = objects[i];
-                var objectX = tileWorldX + object.x;
-                var objectY = tileWorldY + object.y;
-
-                // When objects are parsed by Phaser, they will be guaranteed to have one of the
-                // following properties if they are a rectangle/ellipse/polygon/polyline.
-                if (object.rectangle)
-                {
-                    graphics.strokeRect(objectX, objectY, object.width, object.height);
-                }
-                else if (object.ellipse)
-                {
-                    // Ellipses in Tiled have a top-left origin, while ellipses in Phaser have a center
-                    // origin
-                    graphics.strokeEllipse(
-                        objectX + object.width / 2, objectY + object.height / 2,
-                        object.width, object.height
-                    );
-                }
-                else if (object.polygon || object.polyline)
-                {
-                    var originalPoints = object.polygon ? object.polygon : object.polyline;
-                    var points = [];
-                    for (var j = 0; j < originalPoints.length; j++)
-                    {
-                        var point = originalPoints[j];
-                        points.push({
-                            x: objectX + point.x,
-                            y: objectY + point.y
-                        });
-                    }
-                    graphics.strokePoints(points);
-                }
-            }
-        });
+        }
     }
 }
