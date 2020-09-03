@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import {GameScene} from "./scenes/GameScene";
 import {HelloScene} from "./scenes/HelloScene";
 import Center = Phaser.Scale.Center;
+import {GeneratorScene} from "./scenes/GeneratorScene";
 
 // the game itself
 let game;
@@ -21,9 +22,13 @@ window.onload = function() {
                 debug: true,
             },
         },
-        scene: [HelloScene, GameScene],
+        scene: [GameScene, GeneratorScene, HelloScene],
         parent: 'game',
-        backgroundColor: '#aaaaff',
+        backgroundColor: '#000000',
+        render: {
+            antialias: false,
+            antialiasGL: false,
+        }
     };
 
     game = new Phaser.Game(gameConfig);

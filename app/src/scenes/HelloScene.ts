@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 
 export class HelloScene extends Phaser.Scene {
     private button: any;
+    private menuGeneratorLink: Phaser.GameObjects.Text;
 
     constructor() {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -20,6 +21,15 @@ export class HelloScene extends Phaser.Scene {
     public create() {
         let centerX = this.game.scale.width / 2;
         let centerY = this.game.scale.height / 2;
+
+        // Выбор сцены. Переход на генератор
+        this.menuGeneratorLink = this.add.text(10, 10, 'Map generator')
+            .setColor('black')
+            .setInteractive({useHandCursor: true})
+            .on('pointerover', () => this.hoverText())
+            .on('pointerout', () => this.outText())
+            .on('pointerdown', () => this.clickText());
+
 
         // Нарисуем кнопку, при клике - вызываем сцену игры
         this.button = this.add.circle(centerX, centerY, 25, 0x00FF00)
@@ -43,6 +53,18 @@ export class HelloScene extends Phaser.Scene {
 
     private clickButton() {
         this.scene.start('Game');
+    }
+
+    private hoverText() {
+        this.menuGeneratorLink.setShadow(0, 0, 'black', 5);
+    }
+
+    private outText() {
+        this.menuGeneratorLink.setShadow(0, 0, 'white', 0);
+    }
+
+    private clickText() {
+        this.scene.start('Generator');
     }
 
     public update(time, delta) {

@@ -25,8 +25,12 @@ export class GameScene extends Phaser.Scene {
             'assets/atlas/redBoatSpriteListConfig.json'
         );
 
-        this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
-        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
+        // this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
+        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
+        // this.load.image('tilesExtruded', 'assets/tilemaps/WaterGrassTilesExtruded.png');
+        this.load.image('tilesExtruded16', 'assets/tilemaps/WaterGrassTiles16Extruded.png');
+        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap.json');
+        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap16.json');
     }
 
     public create() {
@@ -34,7 +38,8 @@ export class GameScene extends Phaser.Scene {
 
         // The first parameter is the name of the tileset in Tiled and the second parameter is the key
         // of the tileset image used when loading the file in preload.
-        let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
+        // let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
+        let tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16');
 
         // You can load a layer from the map using the layer name from Tiled, or by using the layer
         // index (0 in this case).
@@ -42,12 +47,12 @@ export class GameScene extends Phaser.Scene {
 
         // TODO: научится бы корректно нужные спрайты для тайлов указывать.
         // TODO: и соответственно - их проверять
-        map.setCollisionBetween(85, 999, true, false, this.layer);
+        map.setCollisionBetween(1, 1, true, false, this.layer);
 
         // let shapeGraphics = this.add.graphics();
         // this.drawCollisionShapes(shapeGraphics);
 
-        this.player = new Player(this, 100, 100);
+        this.player = new Player(this, 200, 250);
 
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.setRoundPixels(true);
