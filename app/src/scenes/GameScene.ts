@@ -85,7 +85,7 @@ export class GameScene extends Phaser.Scene {
 
         //  The score
         this.collectedStars = 0;
-        this.scoreText = this.add.text(16, 16, 'Собрано звёзд: 0 из 10', { fontSize: '32px', fill: '#000' });
+        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' });
         this.scoreText.setScrollFactor(0);
 
     }
