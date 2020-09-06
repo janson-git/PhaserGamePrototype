@@ -3,8 +3,12 @@ import {Player} from "../Player";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 import MathUtils from "../lib/MathUtils";
+import BSPMazeGenerator from "../lib/BSPMazeGenerator";
 
 export class GameScene extends Phaser.Scene {
+
+    private USE_RANDOM_MAPS_IN_GAME: boolean = true;
+
     private player: GameObjectWithBody;
     private layer: StaticTilemapLayer;
     private stars;
@@ -12,13 +16,11 @@ export class GameScene extends Phaser.Scene {
     private scoreText;
 
     constructor() {
-        const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+        super({
             active: false,
             visible: false,
             key: 'Game',
-        };
-
-        super(sceneConfig);
+        });
     }
 
     public preload() {
@@ -38,19 +40,46 @@ export class GameScene extends Phaser.Scene {
     }
 
     public create() {
-        let map = this.make.tilemap({ key: 'map' });
+        let map: Phaser.Tilemaps.Tilemap;
 
-        // The first parameter is the name of the tileset in Tiled and the second parameter is the key
-        // of the tileset image used when loading the file in preload.
-        // let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
-        let tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16');
+        if (this.USE_RANDOM_MAPS_IN_GAME === true) {
+            // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
+            // TODO: надо передавать в генератор какие-то значения, на основе которых мы строим карту
+            let mapGenerator = new BSPMazeGenerator();
+            let levelData = mapGenerator.generateMap(120, 120, 5);
+            // FIXME: пока что, по-умолчанию генератор возвращат 0 где блок и 1 где проход
+            // Перепишем блоки и проходы на наши значения: 1 и 2
+            for (let i = 0; i < levelData.length; i++) {
+                // я хочу, чтобы 2 - это был проход, а 1 - это был блок.
+                // заменяем в данных генератора 1 => 2, 0 => 1
+                levelData[i] = (levelData[i] === 0) ? 1 : 2;
+            }
 
-        // You can load a layer from the map using the layer name from Tiled, or by using the layer
-        // index (0 in this case).
-        this.layer = map.createStaticLayer(0, tiles, 0, 0);
+            // переформатируем levelData в 2D массив
+            let level: number[][] = [], chunk = 120;
+            for (let i = 0, j = levelData.length; i < j; i += chunk) {
+                level.push(levelData.slice(i, i + chunk));
+            }
 
-        // TODO: научится бы корректно нужные спрайты для тайлов указывать.
-        // TODO: и соответственно - их проверять
+            map = this.make.tilemap({data: level, tileWidth: 16, tileHeight: 16});
+            let tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
+            this.layer = map.createStaticLayer(0, tiles, 0, 0);
+        } else {
+            // ИСПОЛЬЗУЕМ КАРТУ ИЗ КОНФИГА
+            map = this.make.tilemap({ key: 'map' });
+
+            // The first parameter is the name of the tileset in Tiled and the second parameter is the key
+            // of the tileset image used when loading the file in preload.
+            // let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
+            let tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16');
+
+            // You can load a layer from the map using the layer name from Tiled, or by using the layer
+            // index (0 in this case).
+            this.layer = map.createStaticLayer(0, tiles, 0, 0);
+        }
+
+
+        // проверка коллизий будет навешена на ID тайлов от start до stop
         map.setCollisionBetween(1, 1, true, false, this.layer);
 
         // случайным образом генерим координаты и проверяем:
@@ -74,7 +103,23 @@ export class GameScene extends Phaser.Scene {
 
         console.log('STARS PLACED!');
 
-        this.player = new Player(this, 200, 250);
+        // случайным образом генерим координаты и проверяем:
+        // если tail в этом месте не препятствие, то можно туда ставить игрока
+        let playerTileX, playerTileY, playerPlaced;
+        do {
+            playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
+            playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
+            let tile = map.getTileAt(playerTileX, playerTileY);
+
+            if (tile.canCollide !== true) {
+                // ставим на поле игрока
+                playerPlaced = true;
+                let coords = map.tileToWorldXY(playerTileX, playerTileY);
+                this.player = new Player(this, coords.x, coords.y);
+            }
+        } while (playerPlaced !== true);
+
+        console.log('PLAYER PLACED!');
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
@@ -87,7 +132,6 @@ export class GameScene extends Phaser.Scene {
         this.collectedStars = 0;
         this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' });
         this.scoreText.setScrollFactor(0);
-
     }
 
     public update(time, delta) {

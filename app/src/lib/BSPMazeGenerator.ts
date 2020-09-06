@@ -46,7 +46,7 @@ export default class BSPMazeGenerator {
         return this.corridors;
     }
 
-    public generateMap(mapWidth: number, mapHeight: number, smoothIterations?: number) {
+    public generateMap(mapWidth: number, mapHeight: number, smoothIterations?: number): number[] {
         let startTree = new Tree(mapWidth, mapHeight);
         startTree.x = 0;
         startTree.y = 0;
