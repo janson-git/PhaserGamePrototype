@@ -47,19 +47,18 @@ export default class CellularAutomate
     }
 
     public initializeMap() {
-        // TODO: 1. заливаем всю карту "точно мёртвым" цветом
-        // TODO: 2. проходим по комнатам и коридорам, заливаем место случайно вокруг них "живыми"
-        // TODO:    так чтобы на границах зон оставались "точно мёртвые" клетки
-        // TODO: 3. заливаем комнаты и коридоры "точно живыми клетками"
-        // TODO: 4. карта готова. Дальше отдельным методом прогоняем одну итерацию.
-        // TODO:    сколько итераций надо - решает внешний код
+        // 1. заливаем всю карту "точно мёртвым" цветом
+        // 2. проходим по комнатам и коридорам, заливаем место случайно вокруг них "живыми"
+        //    так чтобы на границах зон оставались "точно мёртвые" клетки
+        // 3. заливаем комнаты и коридоры "точно живыми клетками"
+        // 4. карта готова. Дальше отдельным методом прогоняем одну итерацию.
+        //    сколько итераций надо - решает внешний код
 
         // заполняем весь массив карты "мёртвыми" клетками
         let mapSize = this.width * this.height;
         for (let i = 0; i < mapSize; i++) {
             this.map[i] = DEAD_CELL;
         }
-console.log(`Map size: ${mapSize}, h: ${this.height}, w: ${this.width}`);
 
         // Далее проходим по всем комнатам, получаем из них зоны, и пространство вокруг
         // комнаты заполняем клетками в суперпозиции. Аналогично - с коридорами
@@ -147,6 +146,16 @@ console.log(`Map size: ${mapSize}, h: ${this.height}, w: ${this.width}`);
                 }
             }
         });
+
+        // Всегда по периметру заполняем мёртвыми клетками. Выхода нет.
+        for (let x = 0; x < this.width; x++) {
+            this.map[ this.coordToOffset(x, 0) ] = DEAD_CELL;
+            this.map[ this.coordToOffset(x, this.height - 1) ] = DEAD_CELL;
+        }
+        for (let y = 0; y < this.height; y++) {
+            this.map[ this.coordToOffset(0, y) ] = DEAD_CELL;
+            this.map[ this.coordToOffset(this.width - 1, y) ] = DEAD_CELL;
+        }
 
         this.map.forEach((value: number, index: number, map: number[]) => {
             if (value === SUPER_CELL) {

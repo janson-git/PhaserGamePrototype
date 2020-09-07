@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import TextButton from "../Components/TextButton";
-import SelectGameButton from "../Components/SelectGameButton";
+import GameMenuButton from "../Components/GameMenuButton";
 
 export class HelloScene extends Phaser.Scene {
     private button: any;
@@ -30,15 +30,20 @@ export class HelloScene extends Phaser.Scene {
             .setX(centerX - Math.round(header.width / 2));
 
         // КНОПОЧКИ
-        // кнопочка перегенерации карты
-        let goSearchBoxGame = new SelectGameButton(this, 150, 100, 100, 100, 'Искать клады');
+        // 1. Игра: найди и собери
+        let goSearchBoxGame = new GameMenuButton(this, 150, 100, 100, 100, 'Искать клады');
         goSearchBoxGame.on('pointerdown', () => {
             this.scene.start('Game');
         });
-
         this.add.existing(goSearchBoxGame);
 
-        // // Выбор сцены. Переход на генератор
+        // 2. Генератор лабиринтов
+        let goMazeGenerator = new GameMenuButton(this, 150, 300, 100, 100, "Генератор \nлабиринтов");
+        goMazeGenerator.on('pointerdown', () => {
+            this.scene.start('Generator');
+        });
+        this.add.existing(goMazeGenerator);
+
         // this.menuGeneratorLink = this.add.text(10, 10, 'Map generator')
         //     .setColor('black')
         //     .setInteractive({useHandCursor: true})

@@ -26,7 +26,6 @@ export class GeneratorScene extends Phaser.Scene {
 
     private mapGenerator: BSPMazeGenerator;
 
-    private cellularAutomate: CellularAutomate;
     private graphicsForMap: Graphics;
 
     constructor() {
@@ -51,6 +50,8 @@ export class GeneratorScene extends Phaser.Scene {
     }
 
     public create() {
+        this.cameras.main.setBackgroundColor('#666666');
+
         this.mapGenerator = new BSPMazeGenerator();
         this.mapGenerator.generateMap(this.MAP_WIDTH, this.MAP_HEIGHT);
 
@@ -91,13 +92,21 @@ export class GeneratorScene extends Phaser.Scene {
         });
         this.add.existing(this.nextIterationButton);
 
-        // кнопочка запуска клеточного автомата
+        // кнопочка для получения дампа карты в textarea
         let getDumpButton = new TextButton(this, 400, 5, 'Get dump')
             .setFontSize(12)
             .on('pointerdown', () => {
                 this.getMapDump();
             });
         this.add.existing(getDumpButton);
+
+        // кнопочка для возвращения в основное меню
+        let returnToMainMenuButton = new TextButton(this, this.cameras.main.width - 115, 5, 'Return to Menu')
+            .setFontSize(12)
+            .on('pointerdown', () => {
+                this.scene.start('Hello');
+            });
+        this.add.existing(returnToMainMenuButton);
     }
 
     public restartScene() {
@@ -105,8 +114,8 @@ export class GeneratorScene extends Phaser.Scene {
         this.rooms = [];
         this.corridors = [];
         KeyGenerator.resetAll();
-        this.cellularAutomate = null;
         this.mapGenerator = null;
+        this.graphicsForMap = null;
 
         this.scene.restart();
     }
@@ -133,14 +142,32 @@ export class GeneratorScene extends Phaser.Scene {
         document.body.removeChild(dlLink);
     }
 
+    /**
+     * Положение карты рисуем по центру холста, поэтому придётся посчитать отступ
+     * от краёв холста по X и Y, исходя из размера карты и ширины камеры
+     */
+    private getMapOffsetX(): number {
+        return (this.cameras.main.width / 2) - (this.MAP_WIDTH / 2);
+    }
+    private getMapOffsetY(): number {
+        return (this.cameras.main.height / 2) - (this.MAP_HEIGHT / 2);
+    }
+
     private drawMap() {
+        // NOTE!
+        // Рисуем карту по центру холста
+        let mapOffsetX = this.getMapOffsetX();
+        let mapOffsetY = this.getMapOffsetY();
+
+        this.add.rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, this.MAP_WIDTH, this.MAP_HEIGHT, 0x000000);
+
         // и теперь для всех комнат и коридоров для дебага можно отрисовать их метки
         // поверх уже нарисованной карты
         // ЗОНЫ
         // this.zones.forEach((tree: Tree) => {
         //     // отрисуем зону
         //     this.add.rectangle(
-        //         tree.x + (tree.width/2), tree.y + (tree.height/2),
+        //         mapOffsetX + tree.x + (tree.width/2), mapOffsetY + tree.y + (tree.height/2),
         //         tree.width - 2, tree.height - 2,
         //         0x0000FF,
         //         .2
@@ -154,13 +181,13 @@ export class GeneratorScene extends Phaser.Scene {
         this.rooms.forEach((room: Room) => {
             // при отрисовке на поле, позиционирование происходит по центру спрайта/фигуры
             this.add.rectangle(
-                room.x + (room.width / 2), room.y + (room.height / 2),
+                mapOffsetX + room.x + (room.width / 2), mapOffsetY + room.y + (room.height / 2),
                 room.width, room.height,
                 0xFFFFFF
             );
 
             let mark = this.add.text(
-                room.x, room.y,
+                mapOffsetX + room.x, mapOffsetY + room.y,
                 `${room.id}`
             ).setColor('green').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
@@ -168,13 +195,13 @@ export class GeneratorScene extends Phaser.Scene {
         // КОРИДОРЫ
         this.corridors.forEach((corridor: Corridor) => {
             this.add.rectangle(
-                corridor.x + (corridor.width / 2), corridor.y + (corridor.height / 2),
+                mapOffsetX + corridor.x + (corridor.width / 2), mapOffsetY + corridor.y + (corridor.height / 2),
                 corridor.width, corridor.height,
                 0xFFFFFF
             );
 
             let mark = this.add.text(
-                corridor.x + corridor.width / 2, corridor.y + corridor.height / 2,
+                mapOffsetX + corridor.x + corridor.width / 2, mapOffsetY + corridor.y + corridor.height / 2,
                 `${corridor.id}`
             ).setColor('black').setBackgroundColor('yellow').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
@@ -188,9 +215,11 @@ export class GeneratorScene extends Phaser.Scene {
         if (this.graphicsForMap instanceof Graphics) {
             this.graphicsForMap.clear();
             this.mapGenerator.runFilterIteration();
+            this.graphicsForMap.translateCanvas(this.getMapOffsetX(), this.getMapOffsetY());
             this.mapGenerator.renderMap(this.graphicsForMap);
         } else {
             this.graphicsForMap = this.add.graphics();
+            this.graphicsForMap.translateCanvas(this.getMapOffsetX(), this.getMapOffsetY());
             this.mapGenerator.renderMap(this.graphicsForMap);
         }
     }

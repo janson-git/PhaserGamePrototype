@@ -189,8 +189,7 @@ export default class BSPMazeGenerator {
         }
     }
 
-    private getCorridor(treeNode1: Tree, treeNode2: Tree): Corridor|null
-    {
+    private getCorridor(treeNode1: Tree, treeNode2: Tree): Corridor|null {
         let minCorridorSize = this.CORRIDOR_WIDTH;
         let corridorId;
         let corridorX, corridorY, corridorWidth, corridorHeight;
