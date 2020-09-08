@@ -1,17 +1,21 @@
 import * as Phaser from "phaser";
 import {Player} from "../Player";
-import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
-import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 import MathUtils from "../lib/MathUtils";
 import BSPMazeGenerator from "../lib/BSPMazeGenerator";
+import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
+import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
+import BlendModes = Phaser.BlendModes;
 
 export class GameScene extends Phaser.Scene {
 
     private USE_RANDOM_MAPS_IN_GAME: boolean = true;
+    private MINIMAP_SCALE: number = 1/16;
 
     private player: GameObjectWithBody;
     private layer: StaticTilemapLayer;
-    private stars;
+    private miniLayer: StaticTilemapLayer;
+    private miniMapLocator: Phaser.GameObjects.Graphics;
+    private stars: Phaser.Physics.Arcade.Group;
     private collectedStars;
     private scoreText;
 
@@ -41,6 +45,8 @@ export class GameScene extends Phaser.Scene {
 
     public create() {
         let map: Phaser.Tilemaps.Tilemap;
+        let miniMap: Phaser.Tilemaps.Tilemap;
+        let tiles: Phaser.Tilemaps.Tileset;
 
         if (this.USE_RANDOM_MAPS_IN_GAME === true) {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
@@ -62,16 +68,19 @@ export class GameScene extends Phaser.Scene {
             }
 
             map = this.make.tilemap({data: level, tileWidth: 16, tileHeight: 16});
-            let tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
+            tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
             this.layer = map.createStaticLayer(0, tiles, 0, 0);
+
+            miniMap = this.make.tilemap({data: level, tileWidth: 16, tileHeight: 16});
         } else {
             // ИСПОЛЬЗУЕМ КАРТУ ИЗ КОНФИГА
             map = this.make.tilemap({ key: 'map' });
+            miniMap = this.make.tilemap({ key: 'map' });
 
             // The first parameter is the name of the tileset in Tiled and the second parameter is the key
             // of the tileset image used when loading the file in preload.
             // let tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
-            let tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16');
+            tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16');
 
             // You can load a layer from the map using the layer name from Tiled, or by using the layer
             // index (0 in this case).
@@ -132,14 +141,39 @@ export class GameScene extends Phaser.Scene {
         this.collectedStars = 0;
         this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' });
         this.scoreText.setScrollFactor(0);
+
+        // Create minimap
+        let miniMapContainer = this.add.group();
+        let gameScale = this.sys.game.scale;
+        // background
+        let miniMapBg = this.add.rectangle(70, gameScale.height - 70, 130, 130, 0x666666, 0.6);
+        miniMapBg.setScrollFactor(0);
+
+        // SCALED tilemap on background, Scale = (1 / tileWidth)
+        this.miniLayer = miniMap.createStaticLayer(0, tiles, 10, gameScale.height - 130);
+        this.miniLayer.setScale(this.MINIMAP_SCALE);
+        this.miniLayer.setScrollFactor(0);
+        this.miniLayer.setBlendMode(BlendModes.SCREEN);
+
+        // graphics to draw player and other objects!
+        this.miniMapLocator = this.add.graphics();
+        this.miniMapLocator.setScrollFactor(0);
+        this.miniMapLocator.setPosition(10, gameScale.height - 130, 130, 130);
+
+        miniMapContainer.addMultiple([miniMapBg, this.miniLayer, this.miniMapLocator]);
     }
 
     public update(time, delta) {
-        const cursorKeys = this.input.keyboard.createCursorKeys();
-
         this.player.update(time, delta);
-
         this.physics.collide(this.player, this.layer);
+
+        // update minimap, draw objects by scaled coordinates
+        let miniPlayerX = this.player.body.position.x * this.MINIMAP_SCALE;
+        let miniPlayerY = this.player.body.position.y * this.MINIMAP_SCALE;
+
+        this.miniMapLocator.clear();
+        this.miniMapLocator.fillStyle(0xFF0000);
+        this.miniMapLocator.fillRect(miniPlayerX, miniPlayerY, 2, 2);
     }
 
     public collectStar (player, star) {
@@ -170,5 +204,68 @@ export class GameScene extends Phaser.Scene {
             // bomb.allowGravity = false;
 
         }
+    }
+
+
+    private renderTexture: Phaser.GameObjects.RenderTexture;
+    private unitDots: Phaser.GameObjects.Graphics;
+
+    public createMiniMap(level) {
+
+
+        let miniMapContainer = this.add.group();
+
+        let gameScale = this.sys.game.scale;
+
+        let miniMap = this.add.rectangle(60, gameScale.height - 60, 100, 100, 0x666666, 0.8);
+        miniMap.setScrollFactor(0);
+        // let resolution = 2 / 100;
+        // let renderWH = 120 * 16; // ширина карты в целом 120 тайлов * 16 пкс на тайл
+        //
+        // let gameScale = this.sys.game.scale;
+        // this.renderTexture = this.add.renderTexture(renderWH, renderWH);
+        // this.renderTexture.scale = resolution;
+        // var cropRect = new Phaser.Geom.Rectangle(0, 0, 200, 200);
+        // this.renderTexture.setCrop(cropRect);
+        // var miniMapY = this.cameras.main.height - (gameScale.height * resolution);
+        // var miniMapUI = this.add.image(0, 0, 'mini_map');
+        // this.renderTexture.displayWidth = this.renderTexture.scale * gameScale.width;
+        // this.renderTexture.displayHeight = this.renderTexture.scale * gameScale.height;
+        // var cropRect = new Phaser.Geom.Rectangle(0, 0, this.renderTexture.displayWidth, this.renderTexture.displayHeight);
+        // this.renderTexture.setCrop(cropRect);
+        // var miniWidth = .075 * this.renderTexture.displayWidth + 100;
+        // var miniHeight = miniMapY - (.06 * this.renderTexture.displayHeight);
+        // let miniMap = this.add.sprite(miniWidth, miniHeight, this.renderTexture.texture);
+        // var padding = .241 * this.renderTexture.displayHeight;
+        // miniMapUI.width = (this.renderTexture.displayWidth + padding);
+        // miniMapUI.height = (this.renderTexture.displayHeight + padding);
+        // miniMapUI.y = this.cameras.main.height - miniMapUI.height;
+        // miniMapUI.setScrollFactor(0);
+        // miniMap.setScrollFactor(0);
+        //
+        // let viewRect = this.add.graphics();
+        // viewRect.lineStyle(1, 0xFFFFFF);
+        // viewRect.fillRect(miniMap.x, miniMap.y, this.cameras.main.width * resolution, this.cameras.main.height * resolution);
+        //
+        // this.unitDots = this.add.graphics({x: miniMap.x, y: miniMap.y});
+        // // this.unitDots.setScrollFactor(0);
+        // var bg = this.add.graphics();
+        // // bg.fillStyle(0x000000, 1);
+        // // bg.fillRect(0, miniMapUI.y + (miniMapUI.height * .1), miniMapUI.width * .95, miniMapUI.height * .9);
+        // // bg.setScrollFactor(0);
+        // var children = [bg, miniMap, this.unitDots, viewRect, miniMapUI];
+        miniMapContainer.addMultiple([miniMap]);
+    }
+
+    private updateUnitDots() {
+        this.unitDots.clear();
+        this.stars.getChildren().forEach((object) => {
+            var unitMiniX = object.body.position.x * this.renderTexture.scale;
+            var unitMiniY = object.body.position.y * this.renderTexture.scale;
+
+            var color = 0x1331a1;
+            this.unitDots.fillStyle(color, 1);
+            this.unitDots.fillEllipse(unitMiniX, unitMiniY, 2, 2);
+        });
     }
 }
