@@ -5,11 +5,12 @@ import BSPMazeGenerator from "../lib/BSPMazeGenerator";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 import BlendModes = Phaser.BlendModes;
+import WaterMazeTilesProcessor from "../lib/WaterMaze/WaterMazeTilesProcessor";
 
 export class GameScene extends Phaser.Scene {
 
     private USE_RANDOM_MAPS_IN_GAME: boolean = true;
-    private MINIMAP_SCALE: number = 1/16;
+    private MINIMAP_SCALE: number = 1/24;
 
     private player: GameObjectWithBody;
     private layer: StaticTilemapLayer;
@@ -37,10 +38,10 @@ export class GameScene extends Phaser.Scene {
 
         this.load.image('star', 'assets/star24.png');
 
-        // this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
-        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
-        this.load.image('tilesExtruded16', 'assets/tilemaps/WaterGrassTiles16Extruded.png');
-        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap16.json');
+        this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
+        this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
+        // this.load.image('tilesExtruded16', 'assets/tilemaps/WaterGrassTiles16Extruded.png');
+        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterGrassMap16.json');
     }
 
     public create() {
@@ -50,16 +51,18 @@ export class GameScene extends Phaser.Scene {
 
         if (this.USE_RANDOM_MAPS_IN_GAME === true) {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
-            // TODO: надо передавать в генератор какие-то значения, на основе которых мы строим карту
             let mapGenerator = new BSPMazeGenerator();
             let levelData = mapGenerator.generateMap(120, 120, 5);
             // FIXME: пока что, по-умолчанию генератор возвращат 0 где блок и 1 где проход
-            // Перепишем блоки и проходы на наши значения: 1 и 2
-            for (let i = 0; i < levelData.length; i++) {
-                // я хочу, чтобы 2 - это был проход, а 1 - это был блок.
-                // заменяем в данных генератора 1 => 2, 0 => 1
-                levelData[i] = (levelData[i] === 0) ? 1 : 2;
-            }
+            // // Перепишем блоки и проходы на наши значения: 1 и 2
+            // for (let i = 0; i < levelData.length; i++) {
+            //     // я хочу, чтобы 2 - это был проход, а 1 - это был блок.
+            //     // заменяем в данных генератора 1 => 2, 0 => 1
+            //     levelData[i] = (levelData[i] === 0) ? 1 : 2;
+            // }
+            // Расставим тайлы из спрайта WaterMazeTiles
+            // TODO: COLLIDES теперь нужно научиться ставить!!!
+            levelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
 
             // переформатируем levelData в 2D массив
             let level: number[][] = [], chunk = 120;
@@ -67,11 +70,12 @@ export class GameScene extends Phaser.Scene {
                 level.push(levelData.slice(i, i + chunk));
             }
 
-            map = this.make.tilemap({data: level, tileWidth: 16, tileHeight: 16});
-            tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
+            map = this.make.tilemap({data: level, tileWidth: 24, tileHeight: 24});
+            tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded', 26, 26, 1, 1, 1);
+            // tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
             this.layer = map.createStaticLayer(0, tiles, 0, 0);
 
-            miniMap = this.make.tilemap({data: level, tileWidth: 16, tileHeight: 16});
+            miniMap = this.make.tilemap({data: level, tileWidth: 24, tileHeight: 24});
         } else {
             // ИСПОЛЬЗУЕМ КАРТУ ИЗ КОНФИГА
             map = this.make.tilemap({ key: 'map' });
