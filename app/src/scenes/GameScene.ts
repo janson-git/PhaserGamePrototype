@@ -75,6 +75,9 @@ export class GameScene extends Phaser.Scene {
             // tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
             this.layer = map.createStaticLayer(0, tiles, 0, 0);
 
+            let collisionBlocks = WaterMazeTilesProcessor.getCollisionTilesIndexes();
+            map.setCollision(collisionBlocks, true, false, this.layer);
+
             miniMap = this.make.tilemap({data: level, tileWidth: 24, tileHeight: 24});
         } else {
             // ИСПОЛЬЗУЕМ КАРТУ ИЗ КОНФИГА
@@ -89,11 +92,10 @@ export class GameScene extends Phaser.Scene {
             // You can load a layer from the map using the layer name from Tiled, or by using the layer
             // index (0 in this case).
             this.layer = map.createStaticLayer(0, tiles, 0, 0);
+
+            // проверка коллизий будет навешена на ID тайлов от start до stop
+            map.setCollisionBetween(1, 1, true, false, this.layer);
         }
-
-
-        // проверка коллизий будет навешена на ID тайлов от start до stop
-        map.setCollisionBetween(1, 1, true, false, this.layer);
 
         // случайным образом генерим координаты и проверяем:
         // если tail в этом месте не препятствие, то можно туда ставить звезду

@@ -6,9 +6,50 @@
  * из WaterMazeTiles[Extruded]
  */
 import TilesEnum from "./TilesEnum";
-import Tile = Phaser.Tilemaps.Tile;
 
 export default class WaterMazeTilesProcessor {
+
+    /**
+     * Возвращает массив со значениями тайлов, которые считаем "блоками"
+     */
+    public static getCollisionTilesIndexes(): number[]
+    {
+        return [
+            TilesEnum.GRASS_BORDER_TOP_LEFT,
+            TilesEnum.GRASS_BORDER_TOP,
+            TilesEnum.GRASS_BORDER_TOP_RIGHT,
+            TilesEnum.GRASS_BORDER_LEFT,
+            TilesEnum.GRASS_CENTER,
+            TilesEnum.GRASS_BORDER_RIGHT,
+            TilesEnum.GRASS_BORDER_BOTTOM_LEFT,
+            TilesEnum.GRASS_BORDER_BOTTOM,
+            TilesEnum.GRASS_BORDER_BOTTOM_RIGHT,
+
+            TilesEnum.GRASS_SINGLE_BUSH,
+
+            TilesEnum.GRASS_BORDER_TOP_LEFT,
+            TilesEnum.GRASS_BORDER_TOP,
+            TilesEnum.GRASS_BORDER_TOP_RIGHT,
+            TilesEnum.GRASS_BORDER_LEFT,
+            TilesEnum.GRASS_CENTER,
+            TilesEnum.GRASS_BORDER_RIGHT,
+            TilesEnum.GRASS_BORDER_BOTTOM_LEFT,
+            TilesEnum.GRASS_BORDER_BOTTOM,
+            TilesEnum.GRASS_BORDER_BOTTOM_RIGHT,
+
+            TilesEnum.GRASS_CROSS_TOP,
+            TilesEnum.GRASS_CROSS_LEFT,
+            TilesEnum.GRASS_CROSS_CENTER,
+            TilesEnum.GRASS_CROSS_RIGHT,
+            TilesEnum.GRASS_CROSS_BOTTOM,
+
+            TilesEnum.GRASS_CORNER_TOP_LEFT,
+            TilesEnum.GRASS_CORNER_TOP_RIGHT,
+            TilesEnum.GRASS_CORNER_BOTTOM_LEFT,
+            TilesEnum.GRASS_CORNER_BOTTOM_RIGHT,
+        ];
+    }
+
     /**
      * Расставляет тайлы из спрайта водяного лабиринта в уровень
      * @param level
@@ -25,72 +66,79 @@ export default class WaterMazeTilesProcessor {
                 // если проход - рисуем воду и всё тут
                 newLevel[i] = TilesEnum.WATER;
             } else {
-                // если у нас блок, то смотрим по окружающим, какой блок нам рисовать
+                // если у нас блок, то смотрим по соседям, какой блок нам рисовать
                 let n = [
-                    level[ i - rowWidth - 1], // 0
+                    level[ i - rowWidth - 1], // 0 - top-left
                     level[ i - rowWidth], // 1 - top
-                    level[ i - rowWidth + 1], // 2
+                    level[ i - rowWidth + 1], // 2 - top-right
                     level[ i - 1], // 3 - left
                     level[ i + 1], // 4 - right
-                    level[ i + rowWidth - 1], // 5
+                    level[ i + rowWidth - 1], // 5 - bottom-left
                     level[ i + rowWidth], // 6 - bottom
-                    level[ i + rowWidth + 1], // 7
+                    level[ i + rowWidth + 1], // 7 - bottom-right
                 ];
 
-                // проверяем четырёх соседей - верх, низ, лево право
+                // ПРОВЕРЯЕМ ЧЕТЫРЁХ ПРЯМЫХ СОСЕДЕЙ - верх, низ, лево право
 
-                // если 3 соседа-прохода
+                // если 4 соседа-прохода
                 if (n[1] === pass && n[3] === pass && n[4] === pass && n[6] === pass) {
-                    newLevel[i] = 113;
-                } else if (n[1] === pass && n[3] === pass && n[4] === pass && n[6] === block) {
-                    newLevel[i] = 167;
+                    newLevel[i] = TilesEnum.GRASS_SINGLE_BUSH;
+                }
+                // если 3 соседа-прохода
+                // это элементы фигуры-креста
+                //   X
+                //  XXX
+                //   X
+                else if (n[1] === pass && n[3] === pass && n[4] === pass && n[6] === block) {
+                    newLevel[i] = TilesEnum.GRASS_CROSS_TOP;
                 } else if (n[1] === pass && n[3] === pass && n[4] === block && n[6] === pass) {
-                    newLevel[i] = 195;
+                    newLevel[i] = TilesEnum.GRASS_CROSS_LEFT;
                 } else if (n[1] === pass && n[3] === block && n[4] === pass && n[6] === pass) {
-                    newLevel[i] = 197;
+                    newLevel[i] = TilesEnum.GRASS_CROSS_RIGHT;
                 } else if (n[1] === block && n[3] === pass && n[4] === pass && n[6] === pass) {
-                    newLevel[i] = 223;
+                    newLevel[i] = TilesEnum.GRASS_CROSS_BOTTOM;
                 }
                 // если 2 соседа-прохода
                 else if (n[1] === pass && n[3] === pass && n[4] === block && n[6] === block) {
-                    newLevel[i] = TilesEnum.GRASS_TOP_LEFT_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_TOP_LEFT;
                 } else if (n[1] === pass && n[3] === block && n[4] === pass && n[6] === block) {
-                    newLevel[i] = TilesEnum.GRASS_TOP_RIGHT_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_TOP_RIGHT;
                 } else if (n[1] === block && n[3] === pass && n[4] === block && n[6] === pass) {
-                    newLevel[i] = TilesEnum.GRASS_BOTTOM_LEFT_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_BOTTOM_LEFT;
                 } else if (n[1] === block && n[3] === block && n[4] === pass && n[6] === pass) {
-                    newLevel[i] = TilesEnum.GRASS_BOTTOM_RIGHT_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_BOTTOM_RIGHT;
                 }
                 // если 1 сосед-проход
                 else if (n[1] === pass) {
-                    newLevel[i] = TilesEnum.GRASS_TOP_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_TOP;
                 } else if (n[3] === pass) {
-                    newLevel[i] = TilesEnum.GRASS_LEFT_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_LEFT;
                 } else if (n[4] === pass) {
-                    newLevel[i] = TilesEnum.GRASS_RIGHT_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_RIGHT;
                 } else if (n[6] === pass) {
-                    newLevel[i] = TilesEnum.GRASS_BOTTOM_BORDER;
+                    newLevel[i] = TilesEnum.GRASS_BORDER_BOTTOM;
                 }
+                // ПРОВЕРИМ ДИАГОНАЛЬНЫХ СОСЕДЕЙ
                 // если со всех сторон блоки, проверим диагональных соседей
                 else if (n[1] === block && n[3] === block && n[4] === block && n[6] === block) {
                     // все диагонали - проходы
                     if (n[0] === pass && n[2] === pass && n[5] === pass && n[7] === pass) {
-                        newLevel[i] = 196;
+                        newLevel[i] = TilesEnum.GRASS_CROSS_CENTER;
                     }
                     // одна из диагоналей - проход
                     else if (n[0] === pass) {
-                        newLevel[i] = 437;
+                        newLevel[i] = TilesEnum.GRASS_CORNER_BOTTOM_RIGHT;
                     } else if (n[2] === pass) {
-                        newLevel[i] = 436;
+                        newLevel[i] = TilesEnum.GRASS_CORNER_BOTTOM_LEFT;
                     } else if (n[5] === pass) {
-                        newLevel[i] = 410;
+                        newLevel[i] = TilesEnum.GRASS_CORNER_TOP_RIGHT;
                     } else if (n[7] ===  pass) {
-                        newLevel[i] = 409;
+                        newLevel[i] = TilesEnum.GRASS_CORNER_TOP_LEFT;
                     } else {
                         newLevel[i] = TilesEnum.GRASS_CENTER;
                     }
                 } else {
-                    newLevel[i] = block;
+                    newLevel[i] = TilesEnum.GRASS_CENTER;
                 }
             }
         }
