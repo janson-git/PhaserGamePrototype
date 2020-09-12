@@ -32,8 +32,6 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
         let yDiff = 0;
         let flipX = false;
 
-        console.log(this.player.body.width, this.player.body.height);
-
         if ( (directionInDeg > (360 - halfStep)) || directionInDeg < halfStep) {
             ////////////// TOP /////////////
             index = 0;
