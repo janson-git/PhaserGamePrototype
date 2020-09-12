@@ -13,9 +13,9 @@ enum TilesEnum {
     WATER_SEDGE_BOTTOM_RIGHT = 69,
 
     WATER_CROSS_SEDGE_TOP = 176,
-    WATER_CROSS_SEDGE_LEFT = 204,
-    WATER_CROSS_SEDGE_RIGHT = 206,
-    WATER_CROSS_SEDGE_BOTTOM = 232,
+    WATER_CROSS_SEDGE_LEFT = 202,
+    WATER_CROSS_SEDGE_RIGHT = 204,
+    WATER_CROSS_SEDGE_BOTTOM = 230,
 
     WATER_SEDGE_CENTER = 122, // вода с осокой со всех сторон окружённая травой
     GRASS_SINGLE_BUSH = 113, // одинокий куст травы
@@ -35,16 +35,26 @@ enum TilesEnum {
 
     // "крест" из травы. Например для отрисовки узких стен или одиночных полу-островков
     GRASS_CROSS_TOP = 167,
-    GRASS_CROSS_LEFT = 195,
-    GRASS_CROSS_CENTER = 196,
-    GRASS_CROSS_RIGHT = 197,
-    GRASS_CROSS_BOTTOM = 223,
+    GRASS_CROSS_LEFT = 193,
+    GRASS_CROSS_CENTER = 194,
+    GRASS_CROSS_RIGHT = 195,
+    GRASS_CROSS_BOTTOM = 221,
 
     // Углы, соседствующие с единственным блоком-проходом, расположенные от него по диагонали
     GRASS_CORNER_TOP_LEFT = 409,
     GRASS_CORNER_TOP_RIGHT = 410,
     GRASS_CORNER_BOTTOM_LEFT = 436,
     GRASS_CORNER_BOTTOM_RIGHT = 437,
+
+    // блок травы, с двумя диагональными соседями
+    GRASS_CENTER_TWO_WATERS_AT_BOTTOM = 329,
+    GRASS_CENTER_TWO_WATERS_AT_RIGHT = 355,
+    GRASS_CENTER_TWO_WATERS_AT_LEFT = 357,
+    GRASS_CENTER_TWO_WATERS_AT_TOP = 383,
+
+    // стены из травы
+    GRASS_WALL_HORIZONTAL = 86,
+    GRASS_WALL_VERTICAL = 112,
 }
 
 export default TilesEnum;

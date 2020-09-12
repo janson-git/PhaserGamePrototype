@@ -59,7 +59,7 @@ export class GameScene extends Phaser.Scene {
         if (this.USE_RANDOM_MAPS_IN_GAME === true) {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
             let mapGenerator = new BSPMazeGenerator();
-            let levelData = mapGenerator.generateMap(120, 120, 5);
+            let levelData = mapGenerator.generateMap(120, 120, 2);
             // генератор возвращает 0 - где блок и 1 - где проход
             // Расставим тайлы из спрайта WaterMazeTiles
             levelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);

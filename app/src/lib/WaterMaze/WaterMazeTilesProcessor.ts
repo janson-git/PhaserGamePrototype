@@ -163,6 +163,10 @@ export default class WaterMazeTilesProcessor {
                     newLevel[i] = TilesEnum.GRASS_BORDER_BOTTOM_LEFT;
                 } else if (n[1] === block && n[3] === block && n[4] === pass && n[6] === pass) {
                     newLevel[i] = TilesEnum.GRASS_BORDER_BOTTOM_RIGHT;
+                } else if (n[1] === pass && n[3] === block && n[4] === block && n[6] === pass) {
+                    newLevel[i] = TilesEnum.GRASS_WALL_HORIZONTAL;
+                } else if (n[1] === block && n[3] === pass && n[4] === pass && n[6] === block) {
+                    newLevel[i] = TilesEnum.GRASS_WALL_VERTICAL;
                 }
                 // если 1 сосед-проход
                 else if (n[1] === pass) {
@@ -180,6 +184,16 @@ export default class WaterMazeTilesProcessor {
                     // все диагонали - проходы
                     if (n[0] === pass && n[2] === pass && n[5] === pass && n[7] === pass) {
                         newLevel[i] = TilesEnum.GRASS_CROSS_CENTER;
+                    }
+                    // две диагонали с одной стороны - проход
+                    else if (n[0] === pass && n[2] === pass && n[5] === block && n[7] === block) {
+                        newLevel[i] = TilesEnum.GRASS_CENTER_TWO_WATERS_AT_TOP;
+                    } else if (n[0] === block && n[2] === block && n[5] === pass && n[7] === pass) {
+                        newLevel[i] = TilesEnum.GRASS_CENTER_TWO_WATERS_AT_BOTTOM;
+                    } else if (n[0] === pass && n[2] === block && n[5] === pass && n[7] === block) {
+                        newLevel[i] = TilesEnum.GRASS_CENTER_TWO_WATERS_AT_LEFT;
+                    } else if (n[0] === block && n[2] === pass && n[5] === block && n[7] === pass) {
+                        newLevel[i] = TilesEnum.GRASS_CENTER_TWO_WATERS_AT_RIGHT;
                     }
                     // одна из диагоналей - проход
                     else if (n[0] === pass) {
