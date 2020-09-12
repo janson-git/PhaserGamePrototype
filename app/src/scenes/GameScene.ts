@@ -1,11 +1,12 @@
 import * as Phaser from "phaser";
-import {Player} from "../Player";
+import {Player} from "../Components/Player";
 import MathUtils from "../lib/MathUtils";
 import BSPMazeGenerator from "../lib/BSPMazeGenerator";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 import BlendModes = Phaser.BlendModes;
 import WaterMazeTilesProcessor from "../lib/WaterMaze/WaterMazeTilesProcessor";
+import {BoatTrail} from "../Components/BoatTrail";
 
 export class GameScene extends Phaser.Scene {
 
@@ -13,6 +14,7 @@ export class GameScene extends Phaser.Scene {
     private MINIMAP_SCALE: number = 1/24;
 
     private player: GameObjectWithBody;
+    private playerBoatTrail: GameObjectWithBody;
     private layer: StaticTilemapLayer;
     private miniLayer: StaticTilemapLayer;
     private miniMapLocator: Phaser.GameObjects.Graphics;
@@ -34,6 +36,11 @@ export class GameScene extends Phaser.Scene {
             'red_boat',
             'assets/atlas/boatsSpriteListTransparent.png',
             'assets/atlas/redBoatSpriteListConfig.json'
+        );
+        this.load.atlas(
+            'boat_trail',
+            'assets/atlas/boatsSpriteListTransparent.png',
+            'assets/atlas/boatTrailSpriteListConfig.json'
         );
 
         this.load.image('star', 'assets/star24.png');
@@ -120,7 +127,7 @@ export class GameScene extends Phaser.Scene {
 
         // случайным образом генерим координаты и проверяем:
         // если tail в этом месте не препятствие, то можно туда ставить игрока
-        let playerTileX, playerTileY, playerPlaced;
+        let player, playerTileX, playerTileY, playerPlaced;
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
@@ -130,10 +137,12 @@ export class GameScene extends Phaser.Scene {
                 // ставим на поле игрока
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
-                this.player = new Player(this, coords.x, coords.y);
+                player = new Player(this, coords.x, coords.y);
             }
         } while (playerPlaced !== true);
 
+        this.player = player;
+        this.playerBoatTrail = new BoatTrail(this, player);
         console.log('PLAYER PLACED!');
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
@@ -172,6 +181,7 @@ export class GameScene extends Phaser.Scene {
     public update(time, delta) {
         this.player.update(time, delta);
         this.physics.collide(this.player, this.layer);
+        this.playerBoatTrail.update(time, delta);
 
         // update minimap, draw objects by scaled coordinates
         let miniPlayerX = this.player.body.position.x * this.MINIMAP_SCALE;
@@ -217,8 +227,6 @@ export class GameScene extends Phaser.Scene {
     private unitDots: Phaser.GameObjects.Graphics;
 
     public createMiniMap(level) {
-
-
         let miniMapContainer = this.add.group();
 
         let gameScale = this.sys.game.scale;
