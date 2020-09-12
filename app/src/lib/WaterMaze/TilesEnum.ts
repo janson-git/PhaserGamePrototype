@@ -1,5 +1,7 @@
 enum TilesEnum {
     WATER = 11, // вода без травы
+    WATER_LILY = 41, // кувшинка без цветка
+    WATER_LILY_FLOWER = 47, // кувшинка c цветком
 
     GRASS_SINGLE_BUSH = 113, // одинокий куст травы
 

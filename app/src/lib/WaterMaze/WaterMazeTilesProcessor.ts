@@ -61,23 +61,41 @@ export default class WaterMazeTilesProcessor {
         let pass: number = 1;
 
         for (let i = 0; i < level.length; i++) {
+            // Соседи
+            let n = [
+                level[ i - rowWidth - 1], // 0 - top-left
+                level[ i - rowWidth], // 1 - top
+                level[ i - rowWidth + 1], // 2 - top-right
+                level[ i - 1], // 3 - left
+                level[ i + 1], // 4 - right
+                level[ i + rowWidth - 1], // 5 - bottom-left
+                level[ i + rowWidth], // 6 - bottom
+                level[ i + rowWidth + 1], // 7 - bottom-right
+            ];
+
             // 0 - блок, 1 - проход
             if (level[i] === pass) {
                 // если проход - рисуем воду и всё тут
                 newLevel[i] = TilesEnum.WATER;
+
+                // если все соседи - проход, то с некоторым шансом поставим кувшинку
+                if (n[0] === pass && n[1] === pass && n[2] === pass && n[3] === pass &&
+                    n[4] === pass && n[5] === pass && n[6] === pass && n[7] === pass
+                ) {
+                    let chance = Math.random();
+                    // Шанс на кувшинку с цветком - 0.2%
+                    if (chance <= .002) {
+                        newLevel[i] = TilesEnum.WATER_LILY_FLOWER;
+                    }
+                    // Шанс на кувшинку без цветка - 1%
+                    else if (chance <= .01) {
+                        newLevel[i] = TilesEnum.WATER_LILY;
+                    }
+                }
+                // если соседи - блоки, то нужно поставить воду с камышами
+
             } else {
                 // если у нас блок, то смотрим по соседям, какой блок нам рисовать
-                let n = [
-                    level[ i - rowWidth - 1], // 0 - top-left
-                    level[ i - rowWidth], // 1 - top
-                    level[ i - rowWidth + 1], // 2 - top-right
-                    level[ i - 1], // 3 - left
-                    level[ i + 1], // 4 - right
-                    level[ i + rowWidth - 1], // 5 - bottom-left
-                    level[ i + rowWidth], // 6 - bottom
-                    level[ i + rowWidth + 1], // 7 - bottom-right
-                ];
-
                 // ПРОВЕРЯЕМ ЧЕТЫРЁХ ПРЯМЫХ СОСЕДЕЙ - верх, низ, лево право
 
                 // если 4 соседа-прохода
