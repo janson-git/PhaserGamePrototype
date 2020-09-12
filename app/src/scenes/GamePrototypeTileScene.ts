@@ -1,5 +1,5 @@
 import * as Phaser from "phaser";
-import {Player} from "../Player";
+import {Player} from "../Components/Player";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 
