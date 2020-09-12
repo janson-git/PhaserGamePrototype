@@ -60,15 +60,8 @@ export class GameScene extends Phaser.Scene {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
             let mapGenerator = new BSPMazeGenerator();
             let levelData = mapGenerator.generateMap(120, 120, 5);
-            // FIXME: пока что, по-умолчанию генератор возвращат 0 где блок и 1 где проход
-            // // Перепишем блоки и проходы на наши значения: 1 и 2
-            // for (let i = 0; i < levelData.length; i++) {
-            //     // я хочу, чтобы 2 - это был проход, а 1 - это был блок.
-            //     // заменяем в данных генератора 1 => 2, 0 => 1
-            //     levelData[i] = (levelData[i] === 0) ? 1 : 2;
-            // }
+            // генератор возвращает 0 - где блок и 1 - где проход
             // Расставим тайлы из спрайта WaterMazeTiles
-            // TODO: COLLIDES теперь нужно научиться ставить!!!
             levelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
 
             // переформатируем levelData в 2D массив
@@ -82,6 +75,7 @@ export class GameScene extends Phaser.Scene {
             // tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
             this.layer = map.createStaticLayer(0, tiles, 0, 0);
 
+            // а теперь для расставленных тайлов установим обработку коллизий
             let collisionBlocks = WaterMazeTilesProcessor.getCollisionTilesIndexes();
             map.setCollision(collisionBlocks, true, false, this.layer);
 
