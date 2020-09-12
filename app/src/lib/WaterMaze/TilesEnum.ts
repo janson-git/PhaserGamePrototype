@@ -3,6 +3,22 @@ enum TilesEnum {
     WATER_LILY = 41, // кувшинка без цветка
     WATER_LILY_FLOWER = 47, // кувшинка c цветком
 
+    WATER_SEDGE_TOP_LEFT = 13,
+    WATER_SEDGE_TOP = 14,
+    WATER_SEDGE_TOP_RIGHT = 15,
+    WATER_SEDGE_LEFT = 40,
+    WATER_SEDGE_RIGHT = 42,
+    WATER_SEDGE_BOTTOM_LEFT = 67,
+    WATER_SEDGE_BOTTOM = 68,
+    WATER_SEDGE_BOTTOM_RIGHT = 69,
+
+    WATER_CROSS_SEDGE_TOP = 176,
+    WATER_CROSS_SEDGE_LEFT = 204,
+    WATER_CROSS_SEDGE_CENTER = 205,
+    WATER_CROSS_SEDGE_RIGHT = 206,
+    WATER_CROSS_SEDGE_BOTTOM = 232,
+
+    WATER_SEDGE_CENTER = 122, // вода с осокой со всех сторон окружённая травой
     GRASS_SINGLE_BUSH = 113, // одинокий куст травы
 
     // границы травы, переход к воде
@@ -15,6 +31,8 @@ enum TilesEnum {
     GRASS_BORDER_BOTTOM_LEFT = 58,
     GRASS_BORDER_BOTTOM = 59,
     GRASS_BORDER_BOTTOM_RIGHT = 60,
+
+    GRASS_CENTER_WITH_SEDGE = 35, // центральный блок травы, с камышом
 
     // "крест" из травы. Например для отрисовки узких стен или одиночных полу-островков
     GRASS_CROSS_TOP = 167,

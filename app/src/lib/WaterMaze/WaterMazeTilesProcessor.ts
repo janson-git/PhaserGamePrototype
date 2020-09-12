@@ -93,6 +93,44 @@ export default class WaterMazeTilesProcessor {
                     }
                 }
                 // если соседи - блоки, то нужно поставить воду с камышами
+                // если 4 соседа-блока
+                if (n[1] === block && n[3] === block && n[4] === block && n[6] === block) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_CENTER;
+                }
+                // если 3 соседа-блока
+                // это элементы фигуры-креста
+                //   X
+                //  XXX
+                //   X
+                else if (n[1] === block && n[3] === block && n[4] === block && n[6] === pass) {
+                    newLevel[i] = TilesEnum.WATER_CROSS_SEDGE_TOP;
+                } else if (n[1] === block && n[3] === block && n[4] === pass && n[6] === block) {
+                    newLevel[i] = TilesEnum.WATER_CROSS_SEDGE_LEFT;
+                } else if (n[1] === block && n[3] === pass && n[4] === block && n[6] === block) {
+                    newLevel[i] = TilesEnum.WATER_CROSS_SEDGE_RIGHT;
+                } else if (n[1] === pass && n[3] === block && n[4] === block && n[6] === block) {
+                    newLevel[i] = TilesEnum.WATER_CROSS_SEDGE_BOTTOM;
+                }
+                // если 2 соседа-блока
+                else if (n[1] === pass && n[3] === pass && n[4] === block && n[6] === block) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_BOTTOM_RIGHT;
+                } else if (n[1] === pass && n[3] === block && n[4] === pass && n[6] === block) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_BOTTOM_LEFT;
+                } else if (n[1] === block && n[3] === pass && n[4] === block && n[6] === pass) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_TOP_RIGHT;
+                } else if (n[1] === block && n[3] === block && n[4] === pass && n[6] === pass) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_TOP_LEFT;
+                }
+                // если 1 сосед-блок
+                else if (n[1] === block) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_TOP;
+                } else if (n[3] === block) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_LEFT;
+                } else if (n[4] === block) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_RIGHT;
+                } else if (n[6] === block) {
+                    newLevel[i] = TilesEnum.WATER_SEDGE_BOTTOM;
+                }
 
             } else {
                 // если у нас блок, то смотрим по соседям, какой блок нам рисовать
@@ -153,10 +191,19 @@ export default class WaterMazeTilesProcessor {
                     } else if (n[7] ===  pass) {
                         newLevel[i] = TilesEnum.GRASS_CORNER_TOP_LEFT;
                     } else {
-                        newLevel[i] = TilesEnum.GRASS_CENTER;
+                        if (Math.random() < 0.03) {
+                            newLevel[i] = TilesEnum.GRASS_CENTER_WITH_SEDGE;
+                        } else {
+                            newLevel[i] = TilesEnum.GRASS_CENTER;
+                        }
                     }
                 } else {
-                    newLevel[i] = TilesEnum.GRASS_CENTER;
+                    // c шансом 1% добавим в траву камыши
+                    if (Math.random() < 0.03) {
+                        newLevel[i] = TilesEnum.GRASS_CENTER_WITH_SEDGE;
+                    } else {
+                        newLevel[i] = TilesEnum.GRASS_CENTER;
+                    }
                 }
             }
         }
