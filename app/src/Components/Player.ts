@@ -6,7 +6,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected speed: number = 0;
 
     protected SPEED_LIMIT: number = 150;
-    protected BACKWARD_SPEED_LIMIT: number = -50;
+    protected BACKWARD_SPEED_LIMIT: number = -20;
     protected ACCELERATION: number = 30; // m/sec^2
     protected DECELERATION: number = 50; // m/sec^2
     protected ROTATE_SPEED: number = 90; // Degrees per second
