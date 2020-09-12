@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 
-export default class SelectGameButton extends Phaser.GameObjects.Container
+export default class GameMenuButton extends Phaser.GameObjects.Container
 {
     public x;
     public y;

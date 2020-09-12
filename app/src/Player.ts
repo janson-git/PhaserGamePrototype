@@ -93,7 +93,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         let num = index;
         if (index > 16) {
-            num = 31 - index;
+            num = 32 - index;
             return {name: 'red_boat_' + num, flipX: true};
         }
         return {name: 'red_boat_' + num, flipX: false};
