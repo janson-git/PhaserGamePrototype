@@ -1,6 +1,14 @@
 import * as Phaser from "phaser";
 import {Player} from "./Player";
 
+type BoatTrailConfig = {
+    name: string,
+    x: number,
+    y: number,
+    flipX: boolean,
+    rotation?: number
+}
+
 export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
 
     private player;
@@ -21,7 +29,7 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
         // this.scene.physics.add.existing(this);
     }
 
-    private getTailConfig(): {flipX: boolean, name: string, x: number, y: number} {
+    private getTailConfig(): BoatTrailConfig {
         let halfStep = this.player.playerSpriteRotateSize / 2;
         let directionInDeg = this.player.direction;
         let index = 0;
@@ -31,6 +39,9 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
         let xDiff = 0;
         let yDiff = 0;
         let flipX = false;
+        let rotation: number = 0;
+
+        let oneGradInRad = Math.PI / 180;
 
         if ( (directionInDeg > (360 - halfStep)) || directionInDeg < halfStep) {
             ////////////// TOP /////////////
@@ -41,6 +52,7 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
             index = 1;
             xDiff = -4;
             yDiff = 12;
+            rotation = -4 * (oneGradInRad);
         } else if (directionInDeg > (22.5 - halfStep) && directionInDeg < (22.5 + halfStep)) {
             index = 1;
             xDiff = -5;
@@ -49,14 +61,16 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
             index = 1;
             xDiff = -6;
             yDiff = 10;
+            rotation = 4 * (oneGradInRad);
         } else if (directionInDeg > (45 - halfStep) && directionInDeg < (45 + halfStep)) {
             index = 2;
-            xDiff = -9;
-            yDiff = 8;
+            xDiff = -8;
+            yDiff = 7;
         } else if (directionInDeg > (56.25 - halfStep) && directionInDeg < (56.25 + halfStep)) {
             index = 2;
             xDiff = -10;
-            yDiff = 6;
+            yDiff = 4;
+            rotation = 10 * (oneGradInRad);
         } else if (directionInDeg > (67.5 - halfStep) && directionInDeg < (67.5 + halfStep)) {
             index = 3;
             xDiff = -11;
@@ -71,13 +85,15 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
             xDiff = -16;
             yDiff = 0;
         } else if (directionInDeg > (101.25 - halfStep) && directionInDeg < (101.25 + halfStep)) {
-            index = 4;
-            xDiff = -16;
-            yDiff = 0;
+            index = 5;
+            xDiff = -15;
+            yDiff = -4;
+            rotation = -25 * (oneGradInRad);
         } else if (directionInDeg > (112.5 - halfStep) && directionInDeg < (112.5 + halfStep)) {
             index = 5;
             xDiff = -12;
             yDiff = -6;
+            rotation = -15 * (oneGradInRad);
         } else if (directionInDeg > (123.75 - halfStep) && directionInDeg < (123.75 + halfStep)) {
             index = 6;
             xDiff = -10;
@@ -98,6 +114,7 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
             index = 7;
             xDiff = -4;
             yDiff = -12;
+            rotation = 4 * (oneGradInRad);
         } else if (directionInDeg > (180 - halfStep) && directionInDeg < (180 + halfStep)) {
             ///////////// DOWN /////////////
             index = 8;
@@ -108,6 +125,7 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
             xDiff = 4;
             yDiff = -12;
             flipX = true;
+            rotation = -4 * (oneGradInRad);
         } else if (directionInDeg > (202.5 - halfStep) && directionInDeg < (202.5 + halfStep)) {
             index = 7;
             xDiff = 5;
@@ -133,6 +151,7 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
             xDiff = 12;
             yDiff = -6;
             flipX = true;
+            rotation = 15 * (oneGradInRad);
         } else if (directionInDeg > (258.75 - halfStep) && directionInDeg < (258.75 + halfStep)) {
             index = 4;
             xDiff = 15;
@@ -181,13 +200,13 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
             flipX = true;
         }
 
-        let num = index;
-        if (index > 16) {
-            num = 32 - index;
-            return {name: 'trail_' + num, x: x + xDiff, y: y + yDiff, flipX: flipX};
-        }
-
-        return {name: 'trail_' + num, x: x + xDiff, y: y + yDiff, flipX: flipX};
+        return {
+            name: 'trail_' + index,
+            x: x + xDiff,
+            y: y + yDiff,
+            flipX: flipX,
+            rotation: rotation
+        };
     }
 
     public update(time, delta) {
@@ -212,6 +231,7 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
         // this.setBodySize(frame.width, frame.height);
 
         this.flipX = config.flipX || false;
+        this.rotation = config.rotation;
         this.setDepth(this.player.depth + 1);
 
         this.anims.play(config.name, true);
