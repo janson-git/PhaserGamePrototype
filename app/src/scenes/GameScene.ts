@@ -1,11 +1,12 @@
 import * as Phaser from "phaser";
-import {Player} from "../Player";
+import {Player} from "../Components/Player";
 import MathUtils from "../lib/MathUtils";
 import BSPMazeGenerator from "../lib/BSPMazeGenerator";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 import BlendModes = Phaser.BlendModes;
 import WaterMazeTilesProcessor from "../lib/WaterMaze/WaterMazeTilesProcessor";
+import {BoatTrail} from "../Components/BoatTrail";
 
 export class GameScene extends Phaser.Scene {
 
@@ -13,6 +14,7 @@ export class GameScene extends Phaser.Scene {
     private MINIMAP_SCALE: number = 1/24;
 
     private player: GameObjectWithBody;
+    private playerBoatTrail: GameObjectWithBody;
     private layer: StaticTilemapLayer;
     private miniLayer: StaticTilemapLayer;
     private miniMapLocator: Phaser.GameObjects.Graphics;
@@ -35,6 +37,11 @@ export class GameScene extends Phaser.Scene {
             'assets/atlas/boatsSpriteListTransparent.png',
             'assets/atlas/redBoatSpriteListConfig.json'
         );
+        this.load.atlas(
+            'boat_trail',
+            'assets/atlas/boatsSpriteListTransparent.png',
+            'assets/atlas/boatTrailSpriteListConfig.json'
+        );
 
         this.load.image('star', 'assets/star24.png');
 
@@ -52,16 +59,9 @@ export class GameScene extends Phaser.Scene {
         if (this.USE_RANDOM_MAPS_IN_GAME === true) {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
             let mapGenerator = new BSPMazeGenerator();
-            let levelData = mapGenerator.generateMap(120, 120, 5);
-            // FIXME: пока что, по-умолчанию генератор возвращат 0 где блок и 1 где проход
-            // // Перепишем блоки и проходы на наши значения: 1 и 2
-            // for (let i = 0; i < levelData.length; i++) {
-            //     // я хочу, чтобы 2 - это был проход, а 1 - это был блок.
-            //     // заменяем в данных генератора 1 => 2, 0 => 1
-            //     levelData[i] = (levelData[i] === 0) ? 1 : 2;
-            // }
+            let levelData = mapGenerator.generateMap(120, 120, 2);
+            // генератор возвращает 0 - где блок и 1 - где проход
             // Расставим тайлы из спрайта WaterMazeTiles
-            // TODO: COLLIDES теперь нужно научиться ставить!!!
             levelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
 
             // переформатируем levelData в 2D массив
@@ -75,6 +75,7 @@ export class GameScene extends Phaser.Scene {
             // tiles = map.addTilesetImage('waterAndGrass16', 'tilesExtruded16', 16, 16, 1, 2, 1);
             this.layer = map.createStaticLayer(0, tiles, 0, 0);
 
+            // а теперь для расставленных тайлов установим обработку коллизий
             let collisionBlocks = WaterMazeTilesProcessor.getCollisionTilesIndexes();
             map.setCollision(collisionBlocks, true, false, this.layer);
 
@@ -120,7 +121,7 @@ export class GameScene extends Phaser.Scene {
 
         // случайным образом генерим координаты и проверяем:
         // если tail в этом месте не препятствие, то можно туда ставить игрока
-        let playerTileX, playerTileY, playerPlaced;
+        let player, playerTileX, playerTileY, playerPlaced;
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
@@ -130,10 +131,12 @@ export class GameScene extends Phaser.Scene {
                 // ставим на поле игрока
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
-                this.player = new Player(this, coords.x, coords.y);
+                player = new Player(this, coords.x, coords.y);
             }
         } while (playerPlaced !== true);
 
+        this.player = player;
+        this.playerBoatTrail = new BoatTrail(this, player);
         console.log('PLAYER PLACED!');
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
@@ -172,6 +175,7 @@ export class GameScene extends Phaser.Scene {
     public update(time, delta) {
         this.player.update(time, delta);
         this.physics.collide(this.player, this.layer);
+        this.playerBoatTrail.update(time, delta);
 
         // update minimap, draw objects by scaled coordinates
         let miniPlayerX = this.player.body.position.x * this.MINIMAP_SCALE;
@@ -217,8 +221,6 @@ export class GameScene extends Phaser.Scene {
     private unitDots: Phaser.GameObjects.Graphics;
 
     public createMiniMap(level) {
-
-
         let miniMapContainer = this.add.group();
 
         let gameScale = this.sys.game.scale;
