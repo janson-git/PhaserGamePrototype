@@ -7,6 +7,12 @@
 
 ENVFILE=.env
 MAKEFILE_PATH=.
+# репозиторий, в который, в ветку gh-pages хотим закоммитить-запушить
+REPO='https://github.com/janson-git/PhaserGamePrototype.git'
+GH_PAGES_PATH="$(APP_DIR)/tmp/gh-pages/"
+DEPLOY_VER=$(shell date +%Y%m%d%H%M%S)
+GIT_USER_EMAIL=$(shell echo $$(git config user.email))
+GIT_USER_NAME=$(shell echo $$(git config user.name))
 
 ifneq ("$(wildcard .env)","")
 	# ENVFILE=.env
@@ -29,6 +35,7 @@ help:  ## Справка по командам
 	@echo Available targets:
 	@echo "   up             Up project"
 	@echo "   down           Down project"
+	@echo "   gh-pages       Publish app/dist to gh-pages branch on github"
 
 ## ===============================================
 #  Targets
@@ -53,4 +60,28 @@ up:
 
 down:
 	cd $(APP_DIR) && docker-compose down -v
+##------------
+
+gh-pages:
+	@echo "Deploy $(DEPLOY_VER) version ..."
+	@echo "Cloning..."
+# склонируемся во временную директорию, перключимся на ветку gh-pages,
+# зальём туда содержимое директории проекта dist и закоммитим это всё, а потом запушим
+	mkdir -p tmp/gh-pages
+	cd $(APP_DIR)/tmp && git clone $(REPO) gh-pages && cd gh-pages \
+		&& git config user.email "$(GIT_USER_EMAIL)" \
+		&& git config user.name "Makefile Deployer"
+	@echo "Checkout to gh-pages branch..."
+	cd $(GH_PAGES_PATH) && git checkout gh-pages
+	@echo "Copy $(APP_DIR)/app/dist to $(APP_DIR)/tmp/gh-pages..."
+	cp -R $(APP_DIR)/app/dist/* $(GH_PAGES_PATH)
+# заменить в app.bundle.js строку "this.load.setBaseURL();" на "this.load.setBaseURL('/PhaserGamePrototype/');"
+# заменить в app.bundle.js строку "this.load.setBaseURL();" на "this.load.setBaseURL('/PhaserGamePrototype/');"
+	sed "s#this.load.setBaseURL()#this.load.setBaseURL(\'\/PhaserGamePrototype\/\')#g" $(APP_DIR)/tmp/gh-pages/app.bundle.js > $(APP_DIR)/tmp/gh-pages/out.app.bundle.js
+	cd $(GH_PAGES_PATH) && mv -f $(GH_PAGES_PATH)/out.app.bundle.js $(GH_PAGES_PATH)/app.bundle.js
+	@echo "Commit changes and push to repo..."
+	cd $(APP_DIR)/tmp/gh-pages && git add . \
+		&& git commit -m "Deploy $(DEPLOY_VER)" \
+		&& git push origin HEAD
+	@echo "Version $(DEPLOY_VER) deployed to gh-pages successfully"
 ##------------
