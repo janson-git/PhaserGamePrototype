@@ -1,5 +1,7 @@
 ![Screenshot](docs/img/screenshot_.png)
 
+Demo: https://janson-git.github.io/PhaserGamePrototype/
+
 ## How to start
 
 ### A. Using `make` command:
