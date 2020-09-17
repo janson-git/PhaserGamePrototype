@@ -1,4 +1,6 @@
-export default class Popup extends Phaser.Scene {
+import * as Phaser from "phaser";
+
+export default class PopupWindow extends Phaser.Scene {
     protected WIDTH: number;
     protected HEIGHT: number;
 
@@ -12,11 +14,16 @@ export default class Popup extends Phaser.Scene {
     private mid;
 
     constructor (handle, parent) {
-        super(handle);
+        const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+            active: false,
+            visible: false,
+            key: handle,
+        };
+        super(sceneConfig);
 
         this.parent = parent;
-        this.WIDTH = 200;
-        this.HEIGHT = 100;
+        this.WIDTH = 400;
+        this.HEIGHT = 300;
         //
         // this.left;
         // this.right;
@@ -31,15 +38,12 @@ export default class Popup extends Phaser.Scene {
     }
 
     create () {
-        var bg = this.add.image(0, 0, 'eyesWindow').setOrigin(0);
-        var bg = this.add.rectangle(0, 0, this.WIDTH, this.HEIGHT);//.setOrigin(0);
+        var bg = this.add.rectangle(0, 0, this.WIDTH, this.HEIGHT,0xcccccc);//.setOrigin(0);
 
         this.cameras.main.setViewport(this.parent.x, this.parent.y, this.WIDTH, this.HEIGHT);
 
-        this.left = this.add.image(46, 92, 'eye');
-        this.right = this.add.image(140, 92, 'eye');
-        this.left = {x: 46, y: 92};
-        this.right = {x: 140, y: 92};
+        this.left = this.add.circle(46, 92, 10, 0x000000);
+        this.right = this.add.circle(140, 92, 10, 0x000000);
 
         this.leftTarget = new Phaser.Geom.Line(this.left.x, this.left.y, 0, 0);
         this.rightTarget = new Phaser.Geom.Line(this.right.x, this.right.y, 0, 0);

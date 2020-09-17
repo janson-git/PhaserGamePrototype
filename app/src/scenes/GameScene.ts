@@ -10,7 +10,7 @@ import {BoatTrail} from "../Components/BoatTrail";
 import Tilemap = Phaser.Tilemaps.Tilemap;
 import Tileset = Phaser.Tilemaps.Tileset;
 import InGameSettingsButton from "../Components/InGameSettingsButton";
-import Popup from "../Components/Popup/Popup";
+import PopupWindow from "../Components/Popup/PopupWindow";
 
 export class GameScene extends Phaser.Scene {
 
@@ -165,7 +165,7 @@ export class GameScene extends Phaser.Scene {
         settingsButton.on('pointerdown', () => {
             // TODO: add popup window menu with items:
             // TODO: 1. exit to main menu
-            // this.createWindow(Popup);
+            this.createWindow(PopupWindow);
         });
     }
 
