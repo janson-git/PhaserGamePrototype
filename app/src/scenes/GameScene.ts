@@ -10,7 +10,9 @@ import {BoatTrail} from "../Components/BoatTrail";
 import Tilemap = Phaser.Tilemaps.Tilemap;
 import Tileset = Phaser.Tilemaps.Tileset;
 import InGameSettingsButton from "../Components/InGameSettingsButton";
-import PopupWindow from "../Components/Popup/PopupWindow";
+import PopupWindowType from "../Components/Popup/PopupWindowType";
+import PopupManager from "../Components/Popup/PopupManager";
+import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
 
 export class GameScene extends Phaser.Scene {
 
@@ -165,7 +167,7 @@ export class GameScene extends Phaser.Scene {
         settingsButton.on('pointerdown', () => {
             // TODO: add popup window menu with items:
             // TODO: 1. exit to main menu
-            this.createWindow(PopupWindow);
+            PopupManager.createWindow(this, new SettingsPopup());
         });
     }
 
@@ -181,30 +183,6 @@ export class GameScene extends Phaser.Scene {
         this.miniMapLocator.clear();
         this.miniMapLocator.fillStyle(0xFF0000);
         this.miniMapLocator.fillRect(miniPlayerX, miniPlayerY, 2, 2);
-    }
-
-    createWindow (func) {
-        var x = Phaser.Math.Between(400, 600);
-        var y = Phaser.Math.Between(64, 128);
-
-        var handle = 'window' + this.popupCount++;
-
-        var win = this.add.zone(x, y, func.WIDTH, func.HEIGHT)
-            .setInteractive({useHandCursor: true})
-            .setOrigin(0);
-
-        var demo = new func(handle, win);
-
-        this.input.setDraggable(win);
-
-        win.on('drag', function (pointer, dragX, dragY) {
-            this.x = dragX;
-            this.y = dragY;
-
-            demo.refresh()
-        });
-
-        this.scene.add(handle, demo, true);
     }
 
     public collectStar (player, star) {

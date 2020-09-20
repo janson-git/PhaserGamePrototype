@@ -1,19 +1,16 @@
 import * as Phaser from "phaser";
+import PopupManager from "./PopupManager";
+import PopupWindowType from "./PopupWindowType";
 
 export default class PopupWindow extends Phaser.Scene {
     protected WIDTH: number;
     protected HEIGHT: number;
 
+    private popup: PopupWindowType;
     private parent;
-    private left;
-    private right;
-    private leftTarget;
-    private rightTarget;
-    private leftBase;
-    private rightBase;
-    private mid;
+    private handle;
 
-    constructor (handle, parent) {
+    constructor (popup: PopupWindowType, handle, parent) {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
             active: false,
             visible: false,
@@ -21,65 +18,39 @@ export default class PopupWindow extends Phaser.Scene {
         };
         super(sceneConfig);
 
+        this.popup = popup;
+        this.handle = handle;
         this.parent = parent;
-        this.WIDTH = 400;
-        this.HEIGHT = 300;
-        //
-        // this.left;
-        // this.right;
-        //
-        // this.leftTarget;
-        // this.rightTarget;
-        //
-        // this.leftBase;
-        // this.rightBase;
-
-        this.mid = new Phaser.Math.Vector2();
+        this.WIDTH = popup.WIDTH;
+        this.HEIGHT = popup.HEIGHT;
     }
 
     create () {
-        var bg = this.add.rectangle(0, 0, this.WIDTH, this.HEIGHT,0xcccccc);//.setOrigin(0);
+        // фон и рамка окна
+        this.add.rectangle(0, 0, this.WIDTH, this.HEIGHT,0xcccccc)
+            .setOrigin(0);
+        this.add.rectangle(5, 5, this.WIDTH - 10, this.HEIGHT - 10,0x000000)
+            .setOrigin(0);
+        this.add.rectangle(8, 8, this.WIDTH - 16, this.HEIGHT - 16,0xcccccc)
+            .setOrigin(0);
+
+        // кнопка закрытия окна
+        this.add.rectangle(this.WIDTH - 30, 10, 20, 20, 0xFF0000)
+            .setOrigin(0)
+            .setInteractive({useHandCursor: true})
+            .on('pointerup', () => {
+                this.scene.stop(this.handle);
+                PopupManager.closeWindow(this.handle);
+            });
+
+        // содержимое окна
+        this.popup.drawPopupContent(this);
 
         this.cameras.main.setViewport(this.parent.x, this.parent.y, this.WIDTH, this.HEIGHT);
-
-        this.left = this.add.circle(46, 92, 10, 0x000000);
-        this.right = this.add.circle(140, 92, 10, 0x000000);
-
-        this.leftTarget = new Phaser.Geom.Line(this.left.x, this.left.y, 0, 0);
-        this.rightTarget = new Phaser.Geom.Line(this.right.x, this.right.y, 0, 0);
-
-        this.leftBase = new Phaser.Geom.Ellipse(this.left.x, this.left.y, 24, 40);
-        this.rightBase = new Phaser.Geom.Ellipse(this.right.x, this.right.y, 24, 40);
     }
 
     update () {
-        this.leftTarget.x2 = this.input.activePointer.x - this.parent.x;
-        this.leftTarget.y2 = this.input.activePointer.y - this.parent.y;
 
-        //  Within the left eye?
-        if (this.leftBase.contains(this.leftTarget.x2, this.leftTarget.y2)) {
-            this.mid.x = this.leftTarget.x2;
-            this.mid.y = this.leftTarget.y2;
-        } else {
-            Phaser.Geom.Ellipse.CircumferencePoint(this.leftBase, Phaser.Geom.Line.Angle(this.leftTarget), this.mid);
-        }
-
-        this.left.x = this.mid.x;
-        this.left.y = this.mid.y;
-
-        this.rightTarget.x2 = this.input.activePointer.x - this.parent.x;
-        this.rightTarget.y2 = this.input.activePointer.y - this.parent.y;
-
-        //  Within the right eye?
-        if (this.rightBase.contains(this.rightTarget.x2, this.rightTarget.y2)) {
-            this.mid.x = this.rightTarget.x2;
-            this.mid.y = this.rightTarget.y2;
-        } else {
-            Phaser.Geom.Ellipse.CircumferencePoint(this.rightBase, Phaser.Geom.Line.Angle(this.rightTarget), this.mid);
-        }
-
-        this.right.x = this.mid.x;
-        this.right.y = this.mid.y;
     }
 
     refresh () {
