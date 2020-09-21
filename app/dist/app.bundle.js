@@ -148,12 +148,24 @@
 /******/
 /******/
 /******/ 	// add entry module to deferred list
-/******/ 	deferredModules.push(["./src/main.ts","vendors"]);
+/******/ 	deferredModules.push(["./src/App.ts","vendors"]);
 /******/ 	// run deferred modules when ready
 /******/ 	return checkDeferredModules();
 /******/ })
 /************************************************************************/
 /******/ ({
+
+/***/ "./src/App.ts":
+/*!********************!*\
+  !*** ./src/App.ts ***!
+  \********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nvar __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {\n    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }\n    return new (P || (P = Promise))(function (resolve, reject) {\n        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }\n        function rejected(value) { try { step(generator[\"throw\"](value)); } catch (e) { reject(e); } }\n        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }\n        step((generator = generator.apply(thisArg, _arguments || [])).next());\n    });\n};\nvar __generator = (this && this.__generator) || function (thisArg, body) {\n    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;\n    return g = { next: verb(0), \"throw\": verb(1), \"return\": verb(2) }, typeof Symbol === \"function\" && (g[Symbol.iterator] = function() { return this; }), g;\n    function verb(n) { return function (v) { return step([n, v]); }; }\n    function step(op) {\n        if (f) throw new TypeError(\"Generator is already executing.\");\n        while (_) try {\n            if (f = 1, y && (t = op[0] & 2 ? y[\"return\"] : op[0] ? y[\"throw\"] || ((t = y[\"return\"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;\n            if (y = 0, t) op = [op[0] & 2, t.value];\n            switch (op[0]) {\n                case 0: case 1: t = op; break;\n                case 4: _.label++; return { value: op[1], done: false };\n                case 5: _.label++; y = op[1]; op = [0]; continue;\n                case 7: op = _.ops.pop(); _.trys.pop(); continue;\n                default:\n                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }\n                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }\n                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }\n                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }\n                    if (t[2]) _.ops.pop();\n                    _.trys.pop(); continue;\n            }\n            op = body.call(thisArg, _);\n        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }\n        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };\n    }\n};\nObject.defineProperty(exports, \"__esModule\", { value: true });\nvar Game_1 = __webpack_require__(/*! ./Game */ \"./src/Game.ts\");\nvar ObjectUtils_1 = __webpack_require__(/*! ./lib/utils/ObjectUtils */ \"./src/lib/utils/ObjectUtils.ts\");\nvar Config_1 = __webpack_require__(/*! ./Config */ \"./src/Config.ts\");\nvar App;\n(function (App) {\n    // game\n    App.game = null;\n})(App || (App = {}));\n// -------------------------------------------------------------------------\nfunction launch() {\n    return __awaiter(this, void 0, void 0, function () {\n        var configJson, e_1;\n        return __generator(this, function (_a) {\n            switch (_a.label) {\n                case 0:\n                    configJson = null;\n                    _a.label = 1;\n                case 1:\n                    _a.trys.push([1, 3, , 4]);\n                    return [4 /*yield*/, ObjectUtils_1.ObjectUtils.loadJson(\"assets/config.json\")];\n                case 2:\n                    configJson = _a.sent();\n                    ObjectUtils_1.ObjectUtils.loadValuesIntoObject(configJson, Config_1.Config);\n                    return [3 /*break*/, 4];\n                case 3:\n                    e_1 = _a.sent();\n                    throw e_1;\n                case 4:\n                    App.game = new Game_1.MyGame;\n                    return [2 /*return*/];\n            }\n        });\n    });\n}\nwindow.onload = launch;\n\n\n//# sourceURL=webpack:///./src/App.ts?");
+
+/***/ }),
 
 /***/ "./src/Components/BoatTrail.ts":
 /*!*************************************!*\
@@ -299,6 +311,30 @@ eval("\nObject.defineProperty(exports, \"__esModule\", { value: true });\nvar Ro
 
 /***/ }),
 
+/***/ "./src/Config.ts":
+/*!***********************!*\
+  !*** ./src/Config.ts ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.Config = void 0;\nvar Config = /** @class */ (function () {\n    function Config() {\n    }\n    // game dimensions\n    Config.GAME_WIDTH = 800;\n    Config.GAME_HEIGHT = 600;\n    return Config;\n}());\nexports.Config = Config;\n\n\n//# sourceURL=webpack:///./src/Config.ts?");
+
+/***/ }),
+
+/***/ "./src/Game.ts":
+/*!*********************!*\
+  !*** ./src/Game.ts ***!
+  \*********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nvar __extends = (this && this.__extends) || (function () {\n    var extendStatics = function (d, b) {\n        extendStatics = Object.setPrototypeOf ||\n            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||\n            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };\n        return extendStatics(d, b);\n    };\n    return function (d, b) {\n        extendStatics(d, b);\n        function __() { this.constructor = d; }\n        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());\n    };\n})();\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.MyGame = void 0;\nvar HelloScene_1 = __webpack_require__(/*! ./scenes/HelloScene */ \"./src/scenes/HelloScene.ts\");\nvar GameScene_1 = __webpack_require__(/*! ./scenes/GameScene */ \"./src/scenes/GameScene.ts\");\nvar GeneratorScene_1 = __webpack_require__(/*! ./scenes/GeneratorScene */ \"./src/scenes/GeneratorScene.ts\");\nvar Center = Phaser.Scale.Center;\nvar Boot_1 = __webpack_require__(/*! ./scenes/Boot */ \"./src/scenes/Boot.ts\");\nvar Preloader_1 = __webpack_require__(/*! ./scenes/Preloader */ \"./src/scenes/Preloader.ts\");\nvar Config_1 = __webpack_require__(/*! ./Config */ \"./src/Config.ts\");\nvar MyGame = /** @class */ (function (_super) {\n    __extends(MyGame, _super);\n    // --------------------------------------------------------------------\n    function MyGame() {\n        var _this = this;\n        console.log(\"MyGame\");\n        // default renderer\n        var renderer = Phaser.AUTO;\n        // init game\n        _this = _super.call(this, {\n            type: renderer,\n            parent: \"game\",\n            width: Config_1.Config.GAME_WIDTH,\n            height: Config_1.Config.GAME_HEIGHT,\n            scale: {\n                autoCenter: Center.CENTER_BOTH\n            },\n            title: \"Boat Game Prototype\",\n            backgroundColor: '#000000',\n            physics: {\n                default: 'arcade',\n                arcade: {\n                    debug: false,\n                },\n            },\n            render: {\n                antialias: false,\n                antialiasGL: false,\n            }\n        }) || this;\n        // states\n        _this.scene.add(\"Boot\", Boot_1.Boot);\n        _this.scene.add(\"Preloader\", Preloader_1.Preloader);\n        _this.scene.add(\"Hello\", HelloScene_1.HelloScene);\n        _this.scene.add(\"Game\", GameScene_1.GameScene);\n        _this.scene.add(\"Generator\", GeneratorScene_1.GeneratorScene);\n        // start\n        _this.scene.start(\"Boot\");\n        return _this;\n    }\n    return MyGame;\n}(Phaser.Game));\nexports.MyGame = MyGame;\n\n\n//# sourceURL=webpack:///./src/Game.ts?");
+
+/***/ }),
+
 /***/ "./src/lib/BSPMazeGenerator.ts":
 /*!*************************************!*\
   !*** ./src/lib/BSPMazeGenerator.ts ***!
@@ -371,15 +407,27 @@ eval("\nObject.defineProperty(exports, \"__esModule\", { value: true });\n/**\n 
 
 /***/ }),
 
-/***/ "./src/main.ts":
-/*!*********************!*\
-  !*** ./src/main.ts ***!
-  \*********************/
+/***/ "./src/lib/utils/ObjectUtils.ts":
+/*!**************************************!*\
+  !*** ./src/lib/utils/ObjectUtils.ts ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nObject.defineProperty(exports, \"__esModule\", { value: true });\nvar Phaser = __webpack_require__(/*! phaser */ \"./node_modules/phaser/dist/phaser.js\");\nvar GameScene_1 = __webpack_require__(/*! ./scenes/GameScene */ \"./src/scenes/GameScene.ts\");\nvar HelloScene_1 = __webpack_require__(/*! ./scenes/HelloScene */ \"./src/scenes/HelloScene.ts\");\nvar Center = Phaser.Scale.Center;\nvar GeneratorScene_1 = __webpack_require__(/*! ./scenes/GeneratorScene */ \"./src/scenes/GeneratorScene.ts\");\n// the game itself\nvar game;\nwindow.onload = function () {\n    var gameConfig = {\n        title: 'Sample',\n        type: Phaser.AUTO,\n        scale: {\n            width: 800,\n            height: 600,\n            autoCenter: Center.CENTER_BOTH\n        },\n        physics: {\n            default: 'arcade',\n            arcade: {\n                debug: false,\n            },\n        },\n        scene: [HelloScene_1.HelloScene, GameScene_1.GameScene, GeneratorScene_1.GeneratorScene],\n        parent: 'game',\n        backgroundColor: '#000000',\n        render: {\n            antialias: false,\n            antialiasGL: false,\n        }\n    };\n    game = new Phaser.Game(gameConfig);\n};\n\n\n//# sourceURL=webpack:///./src/main.ts?");
+eval("\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.ObjectUtils = void 0;\nvar ObjectUtils = /** @class */ (function () {\n    function ObjectUtils() {\n    }\n    // --------------------------------------------------------------------\n    ObjectUtils.loadJson = function (fileName) {\n        return new Promise(function (resolve, reject) {\n            var request = new XMLHttpRequest();\n            request.open('GET', fileName, true);\n            request.responseType = 'json';\n            request.onload = function () {\n                if (request.status === 200) {\n                    resolve(request.response);\n                }\n                else {\n                    reject(new Error(\"Error loading \" + fileName + \": \" + request.statusText));\n                }\n            };\n            request.onerror = function () {\n                reject(new Error(\"Network error while loading \" + fileName));\n            };\n            request.send();\n        });\n    };\n    // --------------------------------------------------------------------\n    ObjectUtils.loadValuesIntoObject = function (jsonData, targetObject) {\n        console.log(\"----- loading values into \" + targetObject.name + \" -----\");\n        for (var property in jsonData) {\n            console.log(\"name = \" + property + \", value = \" + jsonData[property]);\n            targetObject[property] = jsonData[property];\n        }\n        console.log(\"------------------------------------------------\");\n    };\n    return ObjectUtils;\n}());\nexports.ObjectUtils = ObjectUtils;\n\n\n//# sourceURL=webpack:///./src/lib/utils/ObjectUtils.ts?");
+
+/***/ }),
+
+/***/ "./src/scenes/Boot.ts":
+/*!****************************!*\
+  !*** ./src/scenes/Boot.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nvar __extends = (this && this.__extends) || (function () {\n    var extendStatics = function (d, b) {\n        extendStatics = Object.setPrototypeOf ||\n            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||\n            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };\n        return extendStatics(d, b);\n    };\n    return function (d, b) {\n        extendStatics(d, b);\n        function __() { this.constructor = d; }\n        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());\n    };\n})();\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.Boot = void 0;\nvar SceneBase_1 = __webpack_require__(/*! ./SceneBase */ \"./src/scenes/SceneBase.ts\");\nvar Boot = /** @class */ (function (_super) {\n    __extends(Boot, _super);\n    function Boot() {\n        return _super !== null && _super.apply(this, arguments) || this;\n    }\n    // --------------------------------------------------------------------\n    Boot.prototype.create = function () {\n        console.log(\"Boot\");\n        this.scene.start(\"Preloader\");\n    };\n    return Boot;\n}(SceneBase_1.SceneBase));\nexports.Boot = Boot;\n\n\n//# sourceURL=webpack:///./src/scenes/Boot.ts?");
 
 /***/ }),
 
@@ -415,7 +463,31 @@ eval("\nvar __extends = (this && this.__extends) || (function () {\n    var exte
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nvar __extends = (this && this.__extends) || (function () {\n    var extendStatics = function (d, b) {\n        extendStatics = Object.setPrototypeOf ||\n            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||\n            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };\n        return extendStatics(d, b);\n    };\n    return function (d, b) {\n        extendStatics(d, b);\n        function __() { this.constructor = d; }\n        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());\n    };\n})();\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.HelloScene = void 0;\nvar Phaser = __webpack_require__(/*! phaser */ \"./node_modules/phaser/dist/phaser.js\");\nvar GameMenuButton_1 = __webpack_require__(/*! ../Components/GameMenuButton */ \"./src/Components/GameMenuButton.ts\");\nvar HelloScene = /** @class */ (function (_super) {\n    __extends(HelloScene, _super);\n    function HelloScene() {\n        var _this = this;\n        var sceneConfig = {\n            active: false,\n            visible: false,\n            key: 'Hello',\n        };\n        _this = _super.call(this, sceneConfig) || this;\n        return _this;\n    }\n    HelloScene.prototype.preload = function () {\n    };\n    HelloScene.prototype.create = function () {\n        var _this = this;\n        var centerX = this.game.scale.width / 2;\n        var centerY = this.game.scale.height / 2;\n        var header = this.add.text(centerX, 20, 'Выбери что будешь делать');\n        header.setFontStyle('bold')\n            .setFontSize(16)\n            .setX(centerX - Math.round(header.width / 2));\n        // КНОПОЧКИ\n        // 1. Игра: найди и собери\n        var goSearchBoxGame = new GameMenuButton_1.default(this, 150, 100, 100, 100, 'Искать клады');\n        goSearchBoxGame.on('pointerdown', function () {\n            _this.scene.start('Game');\n        });\n        this.add.existing(goSearchBoxGame);\n        // 2. Генератор лабиринтов\n        var goMazeGenerator = new GameMenuButton_1.default(this, 150, 300, 100, 100, \"Генератор \\nлабиринтов\");\n        goMazeGenerator.on('pointerdown', function () {\n            _this.scene.start('Generator');\n        });\n        this.add.existing(goMazeGenerator);\n    };\n    HelloScene.prototype.update = function (time, delta) {\n    };\n    return HelloScene;\n}(Phaser.Scene));\nexports.HelloScene = HelloScene;\n\n\n//# sourceURL=webpack:///./src/scenes/HelloScene.ts?");
+eval("\nvar __extends = (this && this.__extends) || (function () {\n    var extendStatics = function (d, b) {\n        extendStatics = Object.setPrototypeOf ||\n            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||\n            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };\n        return extendStatics(d, b);\n    };\n    return function (d, b) {\n        extendStatics(d, b);\n        function __() { this.constructor = d; }\n        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());\n    };\n})();\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.HelloScene = void 0;\nvar GameMenuButton_1 = __webpack_require__(/*! ../Components/GameMenuButton */ \"./src/Components/GameMenuButton.ts\");\nvar SceneBase_1 = __webpack_require__(/*! ./SceneBase */ \"./src/scenes/SceneBase.ts\");\nvar HelloScene = /** @class */ (function (_super) {\n    __extends(HelloScene, _super);\n    function HelloScene() {\n        var _this = this;\n        console.log(\"HelloScene\");\n        var sceneConfig = {\n            active: false,\n            visible: false,\n            key: 'Hello',\n        };\n        _this = _super.call(this, sceneConfig) || this;\n        return _this;\n    }\n    HelloScene.prototype.preload = function () {\n    };\n    HelloScene.prototype.create = function () {\n        var _this = this;\n        var centerX = this.gameWidth / 2;\n        var centerY = this.gameHeight / 2;\n        var header = this.add.text(centerX, 20, 'Выбери что будешь делать');\n        header.setFontStyle('bold')\n            .setFontSize(16)\n            .setX(centerX - Math.round(header.width / 2));\n        // КНОПОЧКИ\n        // 1. Игра: найди и собери\n        var goSearchBoxGame = new GameMenuButton_1.default(this, 150, 100, 100, 100, 'Искать клады');\n        goSearchBoxGame.on('pointerdown', function () {\n            _this.scene.start('Game');\n        });\n        this.add.existing(goSearchBoxGame);\n        // 2. Генератор лабиринтов\n        var goMazeGenerator = new GameMenuButton_1.default(this, 150, 300, 100, 100, \"Генератор \\nлабиринтов\");\n        goMazeGenerator.on('pointerdown', function () {\n            _this.scene.start('Generator');\n        });\n        this.add.existing(goMazeGenerator);\n    };\n    HelloScene.prototype.update = function (time, delta) {\n    };\n    return HelloScene;\n}(SceneBase_1.SceneBase));\nexports.HelloScene = HelloScene;\n\n\n//# sourceURL=webpack:///./src/scenes/HelloScene.ts?");
+
+/***/ }),
+
+/***/ "./src/scenes/Preloader.ts":
+/*!*********************************!*\
+  !*** ./src/scenes/Preloader.ts ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nvar __extends = (this && this.__extends) || (function () {\n    var extendStatics = function (d, b) {\n        extendStatics = Object.setPrototypeOf ||\n            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||\n            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };\n        return extendStatics(d, b);\n    };\n    return function (d, b) {\n        extendStatics(d, b);\n        function __() { this.constructor = d; }\n        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());\n    };\n})();\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.Preloader = void 0;\nvar SceneBase_1 = __webpack_require__(/*! ./SceneBase */ \"./src/scenes/SceneBase.ts\");\nvar Preloader = /** @class */ (function (_super) {\n    __extends(Preloader, _super);\n    function Preloader() {\n        return _super !== null && _super.apply(this, arguments) || this;\n    }\n    // -------------------------------------------------------------------------\n    Preloader.prototype.create = function () {\n        console.log(\"Preloader\");\n        this.scene.start(\"Hello\");\n    };\n    return Preloader;\n}(SceneBase_1.SceneBase));\nexports.Preloader = Preloader;\n\n\n//# sourceURL=webpack:///./src/scenes/Preloader.ts?");
+
+/***/ }),
+
+/***/ "./src/scenes/SceneBase.ts":
+/*!*********************************!*\
+  !*** ./src/scenes/SceneBase.ts ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nvar __extends = (this && this.__extends) || (function () {\n    var extendStatics = function (d, b) {\n        extendStatics = Object.setPrototypeOf ||\n            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||\n            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };\n        return extendStatics(d, b);\n    };\n    return function (d, b) {\n        extendStatics(d, b);\n        function __() { this.constructor = d; }\n        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());\n    };\n})();\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.SceneBase = void 0;\nvar SceneBase = /** @class */ (function (_super) {\n    __extends(SceneBase, _super);\n    function SceneBase() {\n        return _super !== null && _super.apply(this, arguments) || this;\n    }\n    Object.defineProperty(SceneBase.prototype, \"gameWidth\", {\n        // --------------------------------------------------------------------\n        get: function () {\n            return this.sys.game.config.width;\n        },\n        enumerable: false,\n        configurable: true\n    });\n    Object.defineProperty(SceneBase.prototype, \"gameHeight\", {\n        // --------------------------------------------------------------------\n        get: function () {\n            return this.sys.game.config.height;\n        },\n        enumerable: false,\n        configurable: true\n    });\n    // --------------------------------------------------------------------\n    SceneBase.prototype.setView = function () {\n        // focus on center\n        this.cameras.main.centerOn(0, 0);\n    };\n    return SceneBase;\n}(Phaser.Scene));\nexports.SceneBase = SceneBase;\n\n\n//# sourceURL=webpack:///./src/scenes/SceneBase.ts?");
 
 /***/ })
 
