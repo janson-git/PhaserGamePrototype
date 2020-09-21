@@ -132,7 +132,18 @@ export class GameScene extends SceneBase {
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
             let tile = map.getTileAt(playerTileX, playerTileY);
 
-            if (tile.canCollide !== true) {
+            // И соседей надо проверить
+
+            if (tile.canCollide !== true
+                && map.getTileAt(playerTileX - 1, playerTileY - 1).canCollide !== true
+                && map.getTileAt(playerTileX, playerTileY - 1).canCollide !== true
+                && map.getTileAt(playerTileX + 1, playerTileY - 1).canCollide !== true
+                && map.getTileAt(playerTileX - 1, playerTileY).canCollide !== true
+                && map.getTileAt(playerTileX + 1, playerTileY).canCollide !== true
+                && map.getTileAt(playerTileX - 1, playerTileY + 1).canCollide !== true
+                && map.getTileAt(playerTileX, playerTileY + 1).canCollide !== true
+                && map.getTileAt(playerTileX + 1, playerTileY + 1).canCollide !== true
+            ) {
                 // ставим на поле игрока
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);

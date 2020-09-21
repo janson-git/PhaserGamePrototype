@@ -29,22 +29,31 @@ export default class PopupWindow extends SceneBase {
     }
 
     create () {
+        let bMargin = 5; // border margin
+        let bWidth = 2; // border width
+
         // фон и рамка окна
         this.add.rectangle(0, 0, this.WIDTH, this.HEIGHT,0xcccccc)
             .setOrigin(0);
-        this.add.rectangle(5, 5, this.WIDTH - 10, this.HEIGHT - 10,0x000000)
+        this.add.rectangle(bMargin, bMargin, this.WIDTH - (2 * bMargin), this.HEIGHT - (2 * bMargin),0x000000)
             .setOrigin(0);
-        this.add.rectangle(8, 8, this.WIDTH - 16, this.HEIGHT - 16,0xcccccc)
+        this.add.rectangle(bMargin + bWidth, bMargin + bWidth, this.WIDTH - (2 * (bMargin + bWidth)), this.HEIGHT - (2 * (bMargin + bWidth)),0xcccccc)
             .setOrigin(0);
 
         // кнопка закрытия окна
-        this.add.rectangle(this.WIDTH - 30, 10, 20, 20, 0xFF0000)
+        this.add.rectangle(this.WIDTH - 18, 4, 14, 14, 0xcccccc)
             .setOrigin(0)
             .setInteractive({useHandCursor: true})
             .on('pointerup', () => {
                 this.scene.stop(this.handle);
                 PopupManager.closeWindow(this.parentScene, this.handle);
             });
+
+        let crossLine1 = this.add.line(this.WIDTH - 16, 4, 0, 0, 12, 12, 0x000000)
+            .setOrigin(0);
+        let crossLine2 = this.add.line(this.WIDTH - 16, 4, 0, 12, 12, 0, 0x000000)
+            .setOrigin(0);
+
 
         // содержимое окна
         this.popup.drawPopupContent(this);
