@@ -1,16 +1,18 @@
 import * as Phaser from "phaser";
 import PopupManager from "./PopupManager";
 import PopupWindowType from "./PopupWindowType";
+import {SceneBase} from "../../scenes/SceneBase";
 
-export default class PopupWindow extends Phaser.Scene {
+export default class PopupWindow extends SceneBase {
     protected WIDTH: number;
     protected HEIGHT: number;
 
+    private parentScene: SceneBase;
     private popup: PopupWindowType;
     private parent;
     private handle;
 
-    constructor (popup: PopupWindowType, handle, parent) {
+    constructor (parentScene: SceneBase, popup: PopupWindowType, handle, parent) {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
             active: false,
             visible: false,
@@ -18,6 +20,7 @@ export default class PopupWindow extends Phaser.Scene {
         };
         super(sceneConfig);
 
+        this.parentScene = parentScene;
         this.popup = popup;
         this.handle = handle;
         this.parent = parent;
@@ -40,7 +43,7 @@ export default class PopupWindow extends Phaser.Scene {
             .setInteractive({useHandCursor: true})
             .on('pointerup', () => {
                 this.scene.stop(this.handle);
-                PopupManager.closeWindow(this.handle);
+                PopupManager.closeWindow(this.parentScene, this.handle);
             });
 
         // содержимое окна

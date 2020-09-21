@@ -10,11 +10,11 @@ import {BoatTrail} from "../Components/BoatTrail";
 import Tilemap = Phaser.Tilemaps.Tilemap;
 import Tileset = Phaser.Tilemaps.Tileset;
 import InGameSettingsButton from "../Components/InGameSettingsButton";
-import PopupWindowType from "../Components/Popup/PopupWindowType";
 import PopupManager from "../Components/Popup/PopupManager";
 import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
+import {SceneBase} from "./SceneBase";
 
-export class GameScene extends Phaser.Scene {
+export class GameScene extends SceneBase {
 
     private USE_RANDOM_MAPS_IN_GAME: boolean = true;
     private MINIMAP_SCALE: number = 1/24;
@@ -153,8 +153,8 @@ export class GameScene extends Phaser.Scene {
 
         //  The score
         this.collectedStars = 0;
-        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' });
-        this.scoreText.setScrollFactor(0);
+        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' })
+            .setScrollFactor(0);
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
@@ -217,13 +217,12 @@ export class GameScene extends Phaser.Scene {
 
     public createMiniMap(miniMap: Tilemap, tiles: Tileset) {
         let miniMapContainer = this.add.group();
-        let gameScale = this.sys.game.scale;
         // background
-        let miniMapBg = this.add.rectangle(70, gameScale.height - 70, 130, 130, 0x666666, 0.6);
+        let miniMapBg = this.add.rectangle(70, this.gameWidth - 70, 130, 130, 0x666666, 0.6);
         miniMapBg.setScrollFactor(0);
 
         // SCALED tilemap on background, Scale = (1 / tileWidth)
-        this.miniLayer = miniMap.createStaticLayer(0, tiles, 10, gameScale.height - 130);
+        this.miniLayer = miniMap.createStaticLayer(0, tiles, 10, this.gameHeight - 130);
         this.miniLayer.setScale(this.MINIMAP_SCALE);
         this.miniLayer.setScrollFactor(0);
         this.miniLayer.setBlendMode(BlendModes.SCREEN);
@@ -231,7 +230,7 @@ export class GameScene extends Phaser.Scene {
         // graphics to draw player and other objects!
         this.miniMapLocator = this.add.graphics();
         this.miniMapLocator.setScrollFactor(0);
-        this.miniMapLocator.setPosition(10, gameScale.height - 130, 130, 130);
+        this.miniMapLocator.setPosition(10, this.gameHeight - 130, 130, 130);
 
         miniMapContainer.addMultiple([miniMapBg, this.miniLayer, this.miniMapLocator]);
     }
