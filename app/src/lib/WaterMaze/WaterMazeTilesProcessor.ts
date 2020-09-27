@@ -57,8 +57,8 @@ export default class WaterMazeTilesProcessor {
      */
     public static placeTiles(level: number[], rowWidth: number): number[] {
         let newLevel: number[] = [];
-        let block: number = 0;
-        let pass: number = 1;
+        let block: number = 1;
+        let pass: number = 0;
 
         for (let i = 0; i < level.length; i++) {
             // Соседи

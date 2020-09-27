@@ -13,6 +13,7 @@ import InGameSettingsButton from "../Components/InGameSettingsButton";
 import PopupManager from "../Components/Popup/PopupManager";
 import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
 import {SceneBase} from "./SceneBase";
+import ParseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
 
 export class GameScene extends SceneBase {
 
@@ -21,7 +22,8 @@ export class GameScene extends SceneBase {
 
     private player: GameObjectWithBody;
     private playerBoatTrail: GameObjectWithBody;
-    private layer: StaticTilemapLayer;
+    private collisionLayer: StaticTilemapLayer;
+    private tiledLayer: StaticTilemapLayer;
     private miniLayer: StaticTilemapLayer;
     private miniMapLocator: Phaser.GameObjects.Graphics;
     private stars: Phaser.Physics.Arcade.Group;
@@ -67,25 +69,44 @@ export class GameScene extends SceneBase {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
             let mapGenerator = new BSPMazeGenerator();
             let levelData = mapGenerator.generateMap(120, 120, 2);
-            // генератор возвращает 0 - где блок и 1 - где проход
+            // генератор возвращает 0 - где проход и 1 - где блок
             // Расставим тайлы из спрайта WaterMazeTiles
-            levelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
+            let tiledLevelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
 
-            // переформатируем levelData в 2D массив
-            let level: number[][] = [], chunk = 120;
+            // переформатируем levelData в 2D массив для слоя коллизий
+            let chunk = 120;
+            let collideLayerData: number[][] = [];
             for (let i = 0, j = levelData.length; i < j; i += chunk) {
-                level.push(levelData.slice(i, i + chunk));
+                collideLayerData.push(levelData.slice(i, i + chunk));
+            }
+            // переформатируем tiledLevelData в 2D массив для слоя тайлов (отображение)
+            let tiledLayerData: number[][] = [];
+            for (let i = 0, j = tiledLevelData.length; i < j; i += chunk) {
+                tiledLayerData.push(tiledLevelData.slice(i, i + chunk));
             }
 
-            map = this.make.tilemap({data: level, tileWidth: 24, tileHeight: 24});
+            // Создаём карту в своём собственном парсере, который умеет принимать
+            // несколько слоёв в конфиг
+            map = ParseToMultiLayerTilemap.getTilemap(
+                this,
+                'map',
+                24,
+                24,
+                120,
+                120,
+                [collideLayerData, tiledLayerData],
+                false
+            );
+
             tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded', 26, 26, 1, 1, 1);
-            this.layer = map.createStaticLayer(0, tiles, 0, 0);
 
-            // а теперь для расставленных тайлов установим обработку коллизий
-            let collisionBlocks = WaterMazeTilesProcessor.getCollisionTilesIndexes();
-            map.setCollision(collisionBlocks, true, false, this.layer);
+            this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
+            this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
 
-            miniMap = this.make.tilemap({data: level, tileWidth: 24, tileHeight: 24});
+            // Для просчёта коллизий используем слой коллизий
+            map.setCollision([1], true, false, this.collisionLayer);
+
+            miniMap = this.make.tilemap({data: tiledLayerData, tileWidth: 24, tileHeight: 24});
         } else {
             // ИСПОЛЬЗУЕМ КАРТУ ИЗ КОНФИГА
             map = this.make.tilemap({ key: 'map' });
@@ -97,10 +118,11 @@ export class GameScene extends SceneBase {
 
             // You can load a layer from the map using the layer name from Tiled, or by using the layer
             // index (0 in this case).
-            this.layer = map.createStaticLayer(0, tiles, 0, 0);
+            this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
+            this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
 
             // проверка коллизий будет навешена на ID тайлов от start до stop
-            map.setCollisionBetween(1, 1, true, false, this.layer);
+            map.setCollision([1], true, false, this.collisionLayer);
         }
 
         // случайным образом генерим координаты и проверяем:
@@ -111,7 +133,7 @@ export class GameScene extends SceneBase {
             do {
                 tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
                 tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-                let tile = map.getTileAt(tileX, tileY);
+                let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
 
                 if (tile.canCollide !== true) {
                     // ставим на поле звёздочку
@@ -130,10 +152,9 @@ export class GameScene extends SceneBase {
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-            let tile = map.getTileAt(playerTileX, playerTileY);
+            let tile = map.getTileAt(playerTileX, playerTileY, true, this.collisionLayer);
 
-            // И соседей надо проверить
-
+            // И клетки-соседи надо проверить: рядом должно быть тоже пусто
             if (tile.canCollide !== true
                 && map.getTileAt(playerTileX - 1, playerTileY - 1).canCollide !== true
                 && map.getTileAt(playerTileX, playerTileY - 1).canCollide !== true
@@ -184,7 +205,7 @@ export class GameScene extends SceneBase {
 
     public update(time, delta) {
         this.player.update(time, delta);
-        this.physics.collide(this.player, this.layer);
+        this.physics.collide(this.player, this.collisionLayer);
         this.playerBoatTrail.update(time, delta);
 
         // update minimap, draw objects by scaled coordinates
