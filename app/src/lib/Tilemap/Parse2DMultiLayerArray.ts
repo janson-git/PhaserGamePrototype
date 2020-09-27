@@ -80,8 +80,7 @@ let Parse2DMultiLayerArray = function(name, layersData, widthInTiles, heightInTi
 
             layers.push(layerData);
         }
-console.log('LayersData', layersData);
-console.log('Layers', layers);
+
         mapData.layers = layers;
         return mapData;
     };
