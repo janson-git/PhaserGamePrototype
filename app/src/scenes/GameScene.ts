@@ -9,20 +9,28 @@ import WaterMazeTilesProcessor from "../lib/WaterMaze/WaterMazeTilesProcessor";
 import {BoatTrail} from "../Components/BoatTrail";
 import Tilemap = Phaser.Tilemaps.Tilemap;
 import Tileset = Phaser.Tilemaps.Tileset;
+import InGameSettingsButton from "../Components/InGameSettingsButton";
+import PopupManager from "../Components/Popup/PopupManager";
+import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
+import {SceneBase} from "./SceneBase";
+import ParseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
 
-export class GameScene extends Phaser.Scene {
+export class GameScene extends SceneBase {
 
     private USE_RANDOM_MAPS_IN_GAME: boolean = true;
     private MINIMAP_SCALE: number = 1/24;
 
     private player: GameObjectWithBody;
     private playerBoatTrail: GameObjectWithBody;
-    private layer: StaticTilemapLayer;
+    private collisionLayer: StaticTilemapLayer;
+    private tiledLayer: StaticTilemapLayer;
     private miniLayer: StaticTilemapLayer;
     private miniMapLocator: Phaser.GameObjects.Graphics;
     private stars: Phaser.Physics.Arcade.Group;
     private collectedStars;
     private scoreText;
+
+    private popupCount: number = 0;
 
     constructor() {
         super({
@@ -46,6 +54,7 @@ export class GameScene extends Phaser.Scene {
         );
 
         this.load.image('star', 'assets/star24.png');
+        this.load.image('settingsIcon', 'assets/settingsIcon-24.png');
 
         this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
@@ -60,25 +69,44 @@ export class GameScene extends Phaser.Scene {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
             let mapGenerator = new BSPMazeGenerator();
             let levelData = mapGenerator.generateMap(120, 120, 2);
-            // генератор возвращает 0 - где блок и 1 - где проход
+            // генератор возвращает 0 - где проход и 1 - где блок
             // Расставим тайлы из спрайта WaterMazeTiles
-            levelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
+            let tiledLevelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
 
-            // переформатируем levelData в 2D массив
-            let level: number[][] = [], chunk = 120;
+            // переформатируем levelData в 2D массив для слоя коллизий
+            let chunk = 120;
+            let collideLayerData: number[][] = [];
             for (let i = 0, j = levelData.length; i < j; i += chunk) {
-                level.push(levelData.slice(i, i + chunk));
+                collideLayerData.push(levelData.slice(i, i + chunk));
+            }
+            // переформатируем tiledLevelData в 2D массив для слоя тайлов (отображение)
+            let tiledLayerData: number[][] = [];
+            for (let i = 0, j = tiledLevelData.length; i < j; i += chunk) {
+                tiledLayerData.push(tiledLevelData.slice(i, i + chunk));
             }
 
-            map = this.make.tilemap({data: level, tileWidth: 24, tileHeight: 24});
+            // Создаём карту в своём собственном парсере, который умеет принимать
+            // несколько слоёв в конфиг
+            map = ParseToMultiLayerTilemap.getTilemap(
+                this,
+                'map',
+                24,
+                24,
+                120,
+                120,
+                [collideLayerData, tiledLayerData],
+                false
+            );
+
             tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded', 26, 26, 1, 1, 1);
-            this.layer = map.createStaticLayer(0, tiles, 0, 0);
 
-            // а теперь для расставленных тайлов установим обработку коллизий
-            let collisionBlocks = WaterMazeTilesProcessor.getCollisionTilesIndexes();
-            map.setCollision(collisionBlocks, true, false, this.layer);
+            this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
+            this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
 
-            miniMap = this.make.tilemap({data: level, tileWidth: 24, tileHeight: 24});
+            // Для просчёта коллизий используем слой коллизий
+            map.setCollision([1], true, false, this.collisionLayer);
+
+            miniMap = this.make.tilemap({data: tiledLayerData, tileWidth: 24, tileHeight: 24});
         } else {
             // ИСПОЛЬЗУЕМ КАРТУ ИЗ КОНФИГА
             map = this.make.tilemap({ key: 'map' });
@@ -90,10 +118,11 @@ export class GameScene extends Phaser.Scene {
 
             // You can load a layer from the map using the layer name from Tiled, or by using the layer
             // index (0 in this case).
-            this.layer = map.createStaticLayer(0, tiles, 0, 0);
+            this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
+            this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
 
             // проверка коллизий будет навешена на ID тайлов от start до stop
-            map.setCollisionBetween(1, 1, true, false, this.layer);
+            map.setCollision([1], true, false, this.collisionLayer);
         }
 
         // случайным образом генерим координаты и проверяем:
@@ -104,7 +133,7 @@ export class GameScene extends Phaser.Scene {
             do {
                 tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
                 tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-                let tile = map.getTileAt(tileX, tileY);
+                let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
 
                 if (tile.canCollide !== true) {
                     // ставим на поле звёздочку
@@ -123,9 +152,19 @@ export class GameScene extends Phaser.Scene {
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-            let tile = map.getTileAt(playerTileX, playerTileY);
+            let tile = map.getTileAt(playerTileX, playerTileY, true, this.collisionLayer);
 
-            if (tile.canCollide !== true) {
+            // И клетки-соседи надо проверить: рядом должно быть тоже пусто
+            if (tile.canCollide !== true
+                && map.getTileAt(playerTileX - 1, playerTileY - 1).canCollide !== true
+                && map.getTileAt(playerTileX, playerTileY - 1).canCollide !== true
+                && map.getTileAt(playerTileX + 1, playerTileY - 1).canCollide !== true
+                && map.getTileAt(playerTileX - 1, playerTileY).canCollide !== true
+                && map.getTileAt(playerTileX + 1, playerTileY).canCollide !== true
+                && map.getTileAt(playerTileX - 1, playerTileY + 1).canCollide !== true
+                && map.getTileAt(playerTileX, playerTileY + 1).canCollide !== true
+                && map.getTileAt(playerTileX + 1, playerTileY + 1).canCollide !== true
+            ) {
                 // ставим на поле игрока
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
@@ -146,16 +185,27 @@ export class GameScene extends Phaser.Scene {
 
         //  The score
         this.collectedStars = 0;
-        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' });
-        this.scoreText.setScrollFactor(0);
+        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' })
+            .setScrollFactor(0);
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
+
+        // Create settings icon
+        let gameScale = this.sys.game.scale;
+        let settingsButton = new InGameSettingsButton(this, gameScale.width - 40, 40, 30, 30);
+        settingsButton.setScrollFactor(0);
+
+        settingsButton.on('pointerdown', () => {
+            // TODO: add popup window menu with items:
+            // TODO: 1. exit to main menu
+            PopupManager.createWindow(this, new SettingsPopup());
+        });
     }
 
     public update(time, delta) {
         this.player.update(time, delta);
-        this.physics.collide(this.player, this.layer);
+        this.physics.collide(this.player, this.collisionLayer);
         this.playerBoatTrail.update(time, delta);
 
         // update minimap, draw objects by scaled coordinates
@@ -199,13 +249,12 @@ export class GameScene extends Phaser.Scene {
 
     public createMiniMap(miniMap: Tilemap, tiles: Tileset) {
         let miniMapContainer = this.add.group();
-        let gameScale = this.sys.game.scale;
         // background
-        let miniMapBg = this.add.rectangle(70, gameScale.height - 70, 130, 130, 0x666666, 0.6);
+        let miniMapBg = this.add.rectangle(70, this.gameWidth - 70, 130, 130, 0x666666, 0.6);
         miniMapBg.setScrollFactor(0);
 
         // SCALED tilemap on background, Scale = (1 / tileWidth)
-        this.miniLayer = miniMap.createStaticLayer(0, tiles, 10, gameScale.height - 130);
+        this.miniLayer = miniMap.createStaticLayer(0, tiles, 10, this.gameHeight - 130);
         this.miniLayer.setScale(this.MINIMAP_SCALE);
         this.miniLayer.setScrollFactor(0);
         this.miniLayer.setBlendMode(BlendModes.SCREEN);
@@ -213,7 +262,7 @@ export class GameScene extends Phaser.Scene {
         // graphics to draw player and other objects!
         this.miniMapLocator = this.add.graphics();
         this.miniMapLocator.setScrollFactor(0);
-        this.miniMapLocator.setPosition(10, gameScale.height - 130, 130, 130);
+        this.miniMapLocator.setPosition(10, this.gameHeight - 130, 130, 130);
 
         miniMapContainer.addMultiple([miniMapBg, this.miniLayer, this.miniMapLocator]);
     }

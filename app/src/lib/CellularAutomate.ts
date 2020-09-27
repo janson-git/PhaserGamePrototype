@@ -8,10 +8,10 @@ import Corridor from "../Components/Corridor";
 import Graphics = Phaser.GameObjects.Graphics;
 
 const SUPER_CELL: number = 9; // клетка в суперпозиции - может принять любое значение
-const DEAD_CELL: number = 0; // точно мёртвая. Не изменит состояние при генерации
-const LIVE_CELL: number = 1; // точно живая. Не изменит состояние при генерации
-const SO_DEAD_CELL: number = 2; // условно мёртвая. Может изменить состояние на следующем шаге
-const SO_LIVE_CELL: number = 3; // условно живая. --//--
+const DEAD_CELL: number = 1; // точно мёртвая. Не изменит состояние при генерации
+const LIVE_CELL: number = 0; // точно живая. Не изменит состояние при генерации
+const SO_DEAD_CELL: number = 3; // условно мёртвая. Может изменить состояние на следующем шаге
+const SO_LIVE_CELL: number = 2; // условно живая. --//--
 
 const ZONE_PADDING: number = 2; // незаполняемый промежуток от границы зоны
 const ROOM_FILL_MARGIN = 6; // промежуток вокруг комнаты для заполнения случайными клетками

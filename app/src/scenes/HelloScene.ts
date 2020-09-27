@@ -1,9 +1,11 @@
 import * as Phaser from "phaser";
 import GameMenuButton from "../Components/GameMenuButton";
+import {SceneBase} from "./SceneBase";
 
-export class HelloScene extends Phaser.Scene {
+export class HelloScene extends SceneBase {
 
     constructor() {
+        console.log("HelloScene");
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
             active: false,
             visible: false,
@@ -18,8 +20,8 @@ export class HelloScene extends Phaser.Scene {
     }
 
     public create() {
-        let centerX = this.game.scale.width / 2;
-        let centerY = this.game.scale.height / 2;
+        let centerX = this.gameWidth / 2;
+        let centerY = this.gameHeight / 2;
 
         let header = this.add.text(centerX, 20, 'Выбери что будешь делать');
         header.setFontStyle('bold')

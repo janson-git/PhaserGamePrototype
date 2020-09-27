@@ -8,7 +8,7 @@
 ENVFILE=.env
 MAKEFILE_PATH=.
 # репозиторий, в который, в ветку gh-pages хотим закоммитить-запушить
-REPO='https://github.com/janson-git/PhaserGamePrototype.git'
+REPO=$(shell echo $$(git remote -v | grep push | awk '{print $$2}'))
 GH_PAGES_PATH="$(APP_DIR)/tmp/gh-pages/"
 DEPLOY_VER=$(shell date +%Y%m%d%H%M%S)
 GIT_USER_EMAIL=$(shell echo $$(git config user.email))
@@ -63,6 +63,7 @@ down:
 ##------------
 
 gh-pages:
+	@echo "REPO: $(REPO)\n"
 	@echo "Deploy $(DEPLOY_VER) version ..."
 	@echo "Cloning..."
 # склонируемся во временную директорию, перключимся на ветку gh-pages,
