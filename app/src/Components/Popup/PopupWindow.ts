@@ -49,9 +49,9 @@ export default class PopupWindow extends SceneBase {
                 PopupManager.closeWindow(this.parentScene, this.handle);
             });
 
-        let crossLine1 = this.add.line(this.WIDTH - 16, 4, 0, 0, 12, 12, 0x000000)
+        this.add.line(this.WIDTH - 16, 4, 0, 0, 12, 12, 0x000000)
             .setOrigin(0);
-        let crossLine2 = this.add.line(this.WIDTH - 16, 4, 0, 12, 12, 0, 0x000000)
+        this.add.line(this.WIDTH - 16, 4, 0, 12, 12, 0, 0x000000)
             .setOrigin(0);
 
 
@@ -59,6 +59,13 @@ export default class PopupWindow extends SceneBase {
         this.popup.drawPopupContent(this);
 
         this.cameras.main.setViewport(this.parent.x, this.parent.y, this.WIDTH, this.HEIGHT);
+
+        // если из попапа выбросили событие с требованием закрыть попап
+        this.events.on('CLOSE_POPUP', () => {
+            this.scene.stop(this.handle);
+            PopupManager.closeWindow(this.parentScene, this.handle);
+        });
+
     }
 
     update () {

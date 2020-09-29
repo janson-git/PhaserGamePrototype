@@ -206,6 +206,10 @@ export class GameScene extends SceneBase {
             // TODO: 1. exit to main menu
             PopupManager.createWindow(this, new SettingsPopup());
         });
+
+        this.game.events.on('GO_TO_MAIN_MENU', () => {
+            this.scene.start('Hello');
+        });
     }
 
     public update(time, delta) {

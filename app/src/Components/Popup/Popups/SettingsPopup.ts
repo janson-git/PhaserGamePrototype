@@ -18,5 +18,17 @@ export default class SettingsPopup extends PopupWindowType {
         scene.add.text(20, 94, 'Право/Лево - поворот').setStyle(textStyle);
         scene.add.text(20, 110, 'Пробел - торможение').setStyle(textStyle);
         scene.add.text(20, 127, 'Shift - НИТРО!').setStyle(textStyle);
+
+        scene.add.text(20, 280, 'Выйти в главное меню')
+            .setColor('red')
+            .setInteractive({useHandCursor: true})
+            .on('pointerdown', () => {
+                let r = confirm('Are you sure to exit in main menu?');
+                if (r) {
+                    scene.events.emit('CLOSE_POPUP');
+                    scene.game.events.emit('GO_TO_MAIN_MENU');
+                }
+            });
+
     }
 }
