@@ -29,6 +29,7 @@ export class GameScene extends SceneBase {
     private stars: Phaser.Physics.Arcade.Group;
     private collectedStars;
     private scoreText;
+    private nitroText;
 
     private popupCount: number = 0;
 
@@ -185,8 +186,12 @@ export class GameScene extends SceneBase {
 
         //  The score
         this.collectedStars = 0;
-        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, { fontSize: '32px', fill: '#000' })
+        let textStyle = {fontSize: '28px', fill: '#000', fontFamily: 'Arial, sans-serif'};
+        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, textStyle)
             .setScrollFactor(0);
+
+        this.nitroText = this.add.text(this.gameWidth - 200, 16, `НИТРО: ${player.getNitroCount()}`, textStyle)
+            .setScrollFactor(0).setFontSize(20);
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
@@ -205,7 +210,7 @@ export class GameScene extends SceneBase {
 
     public update(time, delta) {
         this.player.update(time, delta);
-        this.physics.collide(this.player, this.collisionLayer);
+        this.collidePlayerWithWallCallback(time);
         this.playerBoatTrail.update(time, delta);
 
         // update minimap, draw objects by scaled coordinates
@@ -215,6 +220,9 @@ export class GameScene extends SceneBase {
         this.miniMapLocator.clear();
         this.miniMapLocator.fillStyle(0xFF0000);
         this.miniMapLocator.fillRect(miniPlayerX, miniPlayerY, 2, 2);
+
+        let player = this.player as Player;
+        this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
     }
 
     public collectStar (player, star) {
@@ -245,6 +253,29 @@ export class GameScene extends SceneBase {
             // bomb.allowGravity = false;
 
         }
+    }
+
+    // Limits for player collisions handle
+    protected static minimalSpeedOnCollide: number = 25;
+    protected static playerNegativeEffectInterval: number = 0.2; // in seconds
+    protected static lastCollisionEffectTime: number = 0;
+    /**
+     * Collide player with walls handler
+     * @param time
+     */
+    public collidePlayerWithWallCallback(time: number) {
+        time = time / 1000; // convert to seconds
+        let diff = time - GameScene.lastCollisionEffectTime;
+
+        this.physics.collide(this.player, this.collisionLayer, (player, tile) => {
+            if (diff > GameScene.playerNegativeEffectInterval) {
+                let playerInstance = player as Player;
+                let speed = playerInstance.getSpeed();
+                playerInstance.setSpeed(speed > GameScene.minimalSpeedOnCollide ? speed / 2 : 0);
+
+                GameScene.lastCollisionEffectTime = time;
+            }
+        });
     }
 
     public createMiniMap(miniMap: Tilemap, tiles: Tileset) {

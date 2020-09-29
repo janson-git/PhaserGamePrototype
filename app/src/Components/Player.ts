@@ -5,7 +5,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected direction: number = 0;
     protected speed: number = 0;
 
+    protected nitroCount: number = 3;
+    protected isNitroActive: boolean = false;
+    protected nitroActivatedTime: number = 0;
+
     protected SPEED_LIMIT: number = 150;
+    protected SPEED_LIMIT_ON_NITRO: number = 300;
+    protected NITRO_DURATION_IN_SEC: number = 3;
     protected BACKWARD_SPEED_LIMIT: number = -20;
     protected ACCELERATION: number = 30; // m/sec^2
     protected DECELERATION: number = 50; // m/sec^2
@@ -140,6 +146,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
+        if (cursors.shift.isDown && !this.isNitroActive && this.nitroCount > 0) {
+            // активировать нитро!
+            this.isNitroActive = true;
+            this.nitroActivatedTime = time;
+            this.nitroCount--;
+            console.log('is nitro active: ', this.isNitroActive);
+            console.log('nitros left: ', this.nitroCount);
+        }
+
+        // если активно нитро - всегда топим скорость сразу на максимум!
+        if (this.isNitroActive) {
+            let nitroTime = (time - this.nitroActivatedTime) / 1000;
+            if (nitroTime < this.NITRO_DURATION_IN_SEC) {
+                this.speed = this.SPEED_LIMIT_ON_NITRO;
+            } else {
+                this.isNitroActive = false;
+                this.nitroActivatedTime = 0;
+            }
+        }
+
         // после всех изменений проапдейтим горизонтальную и вертикальную скорости
         this.updateVelocities();
 
@@ -156,5 +182,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         let directionInRad = this.direction * Math.PI / 180;
         this.setVelocityX(this.speed * Math.sin(directionInRad));
         this.setVelocityY(-1 * this.speed * Math.cos(directionInRad));
+    }
+
+    public getDirection(): number
+    {
+        return this.direction;
+    }
+
+    public setDirection(direction: number): void
+    {
+        this.direction = direction;
+    }
+
+    public getSpeed(): number
+    {
+        return this.speed;
+    }
+
+    public setSpeed(speed: number): void
+    {
+        this.speed = speed;
+    }
+
+    public getNitroCount(): number
+    {
+        return this.nitroCount;
+    }
+
+    public addNitro(count: number = 1): number
+    {
+        return this.nitroCount + count;
     }
 }
