@@ -31,6 +31,11 @@ export class GameScene extends SceneBase {
     private scoreText;
     private nitroText;
 
+    protected controlHolding = {
+        left: false,
+        right: false,
+    };
+
     private popupCount: number = 0;
 
     constructor() {
@@ -210,6 +215,63 @@ export class GameScene extends SceneBase {
         this.game.events.on('GO_TO_MAIN_MENU', () => {
             this.scene.start('Hello');
         });
+
+        // REFACTOR! Also move player cursor controls here
+        // Create touch controls
+        let w = 0.3 * this.gameWidth;
+        let h = 0.6 * this.gameHeight;
+
+        let zoneLeft = this.add.zone(0,this.gameHeight - h, w, h)
+            .setOrigin(0, 0)
+            .setDepth(10)
+            .setScrollFactor(0);
+
+        let zoneLeftDebug = this.add.graphics({x: 0, y: 0})
+            .setPosition(0, this.gameHeight - h)
+            .fillStyle(0x000000, 0.5)
+            .fillRect(0, 0, w, h)
+            .setScrollFactor(0);
+
+        let zoneRight = this.add.zone(this.gameWidth - w,this.gameHeight - h, w, h)
+            .setOrigin(0, 0)
+            .setDepth(10)
+            .setScrollFactor(0);
+
+        let zoneRightDebug = this.add.graphics({x: 0, y: 0})
+            .setPosition(this.gameWidth - w, this.gameHeight - h)
+            .fillStyle(0x000000, 0.5)
+            .fillRect(0, 0, w, h)
+            .setScrollFactor(0);
+
+        zoneLeft.setInteractive();
+        zoneLeft.on('pointerdown', this.holdLeft, this);
+        zoneLeft.on('pointerup', this.releaseLeft, this);
+        zoneLeft.on('pointerout', this.releaseLeft, this);
+
+        zoneRight.setInteractive();
+        zoneRight.on('pointerdown', this.holdRight, this);
+        zoneRight.on('pointerup', this.releaseRight, this);
+        zoneRight.on('pointerout', this.releaseRight, this);
+    }
+
+    private holdLeft() {
+        console.log('left hold');
+        (this.player as Player).holdLeft();
+    }
+
+    private holdRight() {
+        console.log('right hold');
+        (this.player as Player).holdRight();
+    }
+
+    private releaseLeft() {
+        console.log('left release');
+        (this.player as Player).releaseLeft();
+    }
+
+    private releaseRight() {
+        console.log('right release');
+        (this.player as Player).releaseRight();
     }
 
     public update(time, delta) {
