@@ -23,6 +23,7 @@ export class MyGame extends Phaser.Game {
                 width: window.innerWidth, //Config.GAME_WIDTH,
                 height: window.innerHeight, //Config.GAME_HEIGHT,
                 scale: {
+                    mode: Phaser.Scale.RESIZE,
                     autoCenter: Center.CENTER_BOTH
                 },
                 title: "Boat Game Prototype",

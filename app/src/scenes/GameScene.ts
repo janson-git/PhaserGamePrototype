@@ -14,6 +14,7 @@ import PopupManager from "../Components/Popup/PopupManager";
 import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
 import {SceneBase} from "./SceneBase";
 import ParseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
+import Texture = Phaser.Textures.Texture;
 
 export class GameScene extends SceneBase {
 
@@ -30,11 +31,6 @@ export class GameScene extends SceneBase {
     private collectedStars;
     private scoreText;
     private nitroText;
-
-    protected controlHolding = {
-        left: false,
-        right: false,
-    };
 
     private popupCount: number = 0;
 
@@ -57,6 +53,12 @@ export class GameScene extends SceneBase {
             'boat_trail',
             'assets/atlas/boatsSpriteListTransparent.png',
             'assets/atlas/boatTrailSpriteListConfig.json'
+        );
+
+        this.load.spritesheet(
+            'fullscreenSprite',
+            'assets/fullscreenSprite.png',
+            { frameWidth: 32, frameHeight: 32 }
         );
 
         this.load.image('star', 'assets/star24.png');
@@ -203,9 +205,25 @@ export class GameScene extends SceneBase {
         // Create minimap
         this.createMiniMap(miniMap, tiles);
 
-        // Create settings icon
         let gameScale = this.sys.game.scale;
-        let settingsButton = new InGameSettingsButton(this, gameScale.width - 40, 40, 30, 30);
+
+        // fullscreen toggle button
+        let fullScreenButton = this.add.image(gameScale.width - 24, 16, 'fullscreenSprite', 0)
+            .setOrigin(1, 0)
+            .setScrollFactor(0)
+            .setInteractive()
+            .on('pointerup', function () {
+                if (this.scale.isFullscreen) {
+                    fullScreenButton.setFrame(0);
+                    this.scale.stopFullscreen();
+                } else {
+                    fullScreenButton.setFrame(1);
+                    this.scale.startFullscreen();
+                }
+            }, this);
+
+        // Create settings icon
+        let settingsButton = new InGameSettingsButton(this, gameScale.width - 40, 75, 30, 30);
         settingsButton.setScrollFactor(0);
 
         settingsButton.on('pointerdown', () => {
