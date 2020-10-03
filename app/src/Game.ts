@@ -20,8 +20,8 @@ export class MyGame extends Phaser.Game {
 
                 parent: "game",
 
-                width: Config.GAME_WIDTH,
-                height: Config.GAME_HEIGHT,
+                width: window.innerWidth, //Config.GAME_WIDTH,
+                height: window.innerHeight, //Config.GAME_HEIGHT,
                 scale: {
                     autoCenter: Center.CENTER_BOTH
                 },

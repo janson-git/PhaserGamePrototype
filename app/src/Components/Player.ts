@@ -8,9 +8,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected controlsHold = {
         left: false,
         right: false,
-        // TODO: IMPLEMENT! LOOK IN GAME SCENE!
-        up: 'NOT_IMPLEMENTED',
-        down: 'NOT IMPLEMENTED'
+        up: false,
+        down: false,
+        nitro: false
     };
 
     protected nitroCount: number = 3;
@@ -119,11 +119,31 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     public holdRight() {
         this.controlsHold.right = true;
     }
+    public holdUp() {
+        this.controlsHold.up = true;
+    }
+    public holdDown() {
+        this.controlsHold.down = true;
+    }
     public releaseLeft() {
         this.controlsHold.left = false;
     }
     public releaseRight() {
         this.controlsHold.right = false;
+    }
+    public releaseUp() {
+        this.controlsHold.up = false;
+    }
+    public releaseDown() {
+        this.controlsHold.down = false;
+    }
+
+    public holdNitro() {
+        this.controlsHold.nitro = true;
+    }
+
+    public releaseNitro() {
+        this.controlsHold.nitro = false;
     }
 
     public update(time, delta) {
@@ -141,7 +161,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.direction = this.direction - 360;
             }
         }
-        if (cursors.up.isDown) {
+        if (cursors.up.isDown || this.controlsHold.up) {
             this.speed += (this.ACCELERATION * tDiff);
             if (this.speed > this.SPEED_LIMIT) {
                 this.speed = this.SPEED_LIMIT;
@@ -153,7 +173,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        if (cursors.space.isDown) {
+        if (cursors.space.isDown|| this.controlsHold.down) {
             if (this.speed > 0) {
                 this.speed -= (this.DECELERATION * tDiff);
                 if (this.speed < 0) {
@@ -167,7 +187,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        if (cursors.shift.isDown && !this.isNitroActive && this.nitroCount > 0) {
+        if ((cursors.shift.isDown || this.controlsHold.nitro) && !this.isNitroActive && this.nitroCount > 0) {
             // активировать нитро!
             this.isNitroActive = true;
             this.nitroActivatedTime = time;
@@ -184,6 +204,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             } else {
                 this.isNitroActive = false;
                 this.nitroActivatedTime = 0;
+                this.speed = this.SPEED_LIMIT;
             }
         }
 
