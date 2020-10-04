@@ -30,6 +30,7 @@ export class GameScene extends SceneBase {
     private collectedStars;
     private scoreText;
     private nitroText;
+    private fullscreenButton;
 
     private popupCount: number = 0;
 
@@ -54,8 +55,16 @@ export class GameScene extends SceneBase {
             'assets/atlas/boatTrailSpriteListConfig.json'
         );
 
+        this.load.spritesheet(
+            'fullscreenSprite',
+            'assets/fullscreenSprite.png',
+            { frameWidth: 32, frameHeight: 32 }
+        );
+
         this.load.image('star', 'assets/star24.png');
         this.load.image('settingsIcon', 'assets/settingsIcon-24.png');
+        this.load.image('turnLeftArrow', 'assets/turnLeftArrow.png');
+        this.load.image('turnRightArrow', 'assets/turnRightArrow.png');
 
         this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
@@ -196,20 +205,40 @@ export class GameScene extends SceneBase {
         // Create minimap
         this.createMiniMap(miniMap, tiles);
 
-        // Create settings icon
         let gameScale = this.sys.game.scale;
-        let settingsButton = new InGameSettingsButton(this, gameScale.width - 40, 40, 30, 30);
+
+        // fullscreen toggle button
+        this.fullscreenButton = this.add.image(gameScale.width - 24, 16, 'fullscreenSprite', 0)
+            .setOrigin(1, 0)
+            .setScrollFactor(0)
+            .setInteractive({useHandCursor: true})
+            .on('pointerup', function () {
+                if (this.scale.isFullscreen) {
+                    this.fullscreenButton.setFrame(0);
+                    this.scale.stopFullscreen();
+                } else {
+                    this.fullscreenButton.setFrame(1);
+                    this.scale.startFullscreen();
+                }
+            }, this);
+
+        // Create settings icon
+        let settingsButton = new InGameSettingsButton(this, gameScale.width - 40, 75, 30, 30);
         settingsButton.setScrollFactor(0);
 
         settingsButton.on('pointerdown', () => {
-            // TODO: add popup window menu with items:
-            // TODO: 1. exit to main menu
             PopupManager.createWindow(this, new SettingsPopup());
         });
 
         this.game.events.on('GO_TO_MAIN_MENU', () => {
             this.scene.start('Hello');
         });
+
+        // touch devices has 2 pointers but desktop has only one
+        if (this.input.manager.pointersTotal > 1) {
+            // Create touch controls for touch devices
+            this.createTouchControlZones();
+        }
     }
 
     public update(time, delta) {
@@ -227,6 +256,11 @@ export class GameScene extends SceneBase {
 
         let player = this.player as Player;
         this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
+
+        // на случай, если из полноэкранного режима вышли по Esc, перерисуем иконку
+        if (!this.scale.isFullscreen) {
+            this.fullscreenButton.setFrame(0);
+        }
     }
 
     public collectStar (player, star) {
@@ -300,5 +334,188 @@ export class GameScene extends SceneBase {
         this.miniMapLocator.setPosition(10, this.gameHeight - 130, 130, 130);
 
         miniMapContainer.addMultiple([miniMapBg, this.miniLayer, this.miniMapLocator]);
+    }
+
+    private createTouchControlZones()
+    {
+        let zoneOffsetX = 50;
+        let zoneOffsetY = 30;
+
+        let zonePadding = 20;
+        let zoneW = 60 + (2 * zonePadding);
+        let zoneH = 50 + (2 * zonePadding);
+
+        let leftZonePosX = zoneOffsetX - zonePadding;
+        let leftZonePosY = this.gameHeight - zoneOffsetY - zoneH;
+        let rightZonePosX = this.gameWidth - zoneOffsetX - zoneW;
+        let rightZonePosY = this.gameHeight - zoneOffsetY - zoneH;
+
+        let upZonePosX = zoneOffsetX - zonePadding;
+        let upZonePosY = this.gameHeight - 3 * (zoneOffsetY + zoneH);
+
+        let downZonePosX = zoneOffsetX - zonePadding;
+        let downZonePosY = this.gameHeight - 2 * (zoneOffsetY + zoneH);
+
+        let arrowW = 50;
+        let arrowH = 50;
+
+
+        // setOrigin(0) - значит позицию выставляем по левому верхнему углу
+        let leftArrowX = zoneOffsetX;
+        let leftArrowY = this.gameHeight - arrowH - zoneOffsetY - zonePadding;
+        let rightArrowX = this.gameWidth - arrowW - zoneOffsetX - zonePadding;
+        let rightArrowY = this.gameHeight - arrowH - zoneOffsetY - zonePadding;
+
+
+        let turnLeftArrow = this.add.image(leftArrowX, leftArrowY, 'turnLeftArrow')
+            .setOrigin(0, 0)
+            .setScrollFactor(0)
+            .setScale(0.5);
+        let turnRightArrow = this.add.image(rightArrowX, rightArrowY, 'turnRightArrow')
+            .setOrigin(0, 0)
+            .setScrollFactor(0)
+            .setScale(0.5);
+
+        // touch zones for turn left and right
+        let zoneLeft = this.add.zone(leftZonePosX, leftZonePosY, zoneW, zoneH)
+            .setOrigin(0, 0)
+            .setDepth(10)
+            .setScrollFactor(0);
+        let zoneLeftDebug = this.add.graphics({x: 0, y: 0})
+            .setPosition(leftZonePosX, leftZonePosY)
+            .fillStyle(0x000000, 0.5)
+            .fillRect(0, 0, zoneW, zoneH)
+            .setScrollFactor(0);
+
+        let zoneRight = this.add.zone(rightZonePosX, rightZonePosY, zoneW, zoneH)
+            .setOrigin(0, 0)
+            .setDepth(10)
+            .setScrollFactor(0);
+        let zoneRightDebug = this.add.graphics({x: 0, y: 0})
+            .setPosition(rightZonePosX, rightZonePosY)
+            .fillStyle(0x000000, 0.5)
+            .fillRect(0, 0, zoneW, zoneH)
+            .setScrollFactor(0);
+
+        let zoneUp = this.add.zone(upZonePosX, upZonePosY , zoneW, zoneH)
+            .setOrigin(0, 0)
+            .setDepth(10)
+            .setScrollFactor(0);
+        let zoneUpDebug = this.add.graphics({x: 0, y: 0})
+            .setPosition(upZonePosX, upZonePosY)
+            .fillStyle(0x000000, 0.5)
+            .fillRect(0, 0, zoneW, zoneH)
+            .setScrollFactor(0);
+
+        let textX = upZonePosX + zonePadding;
+        this.add.text(textX, upZonePosY + zonePadding, 'Speed')
+            .setScrollFactor(0)
+            .setColor('0x000000')
+            .setFontSize(18);
+        this.add.text(textX, upZonePosY + zonePadding + 20, 'Up')
+            .setScrollFactor(0)
+            .setColor('0x000000')
+            .setFontSize(18);
+
+        let zoneDown = this.add.zone(downZonePosX,downZonePosY, zoneW, zoneH)
+            .setOrigin(0, 0)
+            .setDepth(10)
+            .setScrollFactor(0);
+        let zoneDownDebug = this.add.graphics({x: 0, y: 0})
+            .setPosition(downZonePosX,downZonePosY)
+            .fillStyle(0x000000, 0.5)
+            .fillRect(0, 0, zoneW, zoneH)
+            .setScrollFactor(0);
+        this.add.text(textX, downZonePosY + zonePadding, 'Speed')
+            .setScrollFactor(0)
+            .setColor('0x000000')
+            .setFontSize(18);
+        this.add.text(textX, downZonePosY + zonePadding + 20, 'Down')
+            .setScrollFactor(0)
+            .setColor('0x000000')
+            .setFontSize(18);
+
+
+        let nitroPadding = 10;
+        let zoneNitroX = this.nitroText.x;
+        let zoneNitroY = this.nitroText.y;
+        let zoneNitroW = this.nitroText.width + (2 * nitroPadding);
+        let zoneNitroH = this.nitroText.height + (2 * nitroPadding);
+
+        let zoneNitro = this.add.zone(zoneNitroX - nitroPadding, zoneNitroY - nitroPadding, zoneNitroW, zoneNitroH)
+            .setOrigin(0, 0)
+            .setDepth(10)
+            .setScrollFactor(0);
+        let zoneNitroDebug = this.add.graphics({x: 0, y: 0})
+            .setPosition(zoneNitroX - nitroPadding, zoneNitroY - nitroPadding)
+            .fillStyle(0x000000, 0.5)
+            .fillRect(0, 0, zoneNitroW, zoneNitroH)
+            .setScrollFactor(0);
+
+
+        zoneLeft.setInteractive();
+        zoneLeft.on('pointerdown', this.holdLeft, this);
+        zoneLeft.on('pointerup', this.releaseLeft, this);
+        zoneLeft.on('pointerout', this.releaseLeft, this);
+
+        zoneRight.setInteractive();
+        zoneRight.on('pointerdown', this.holdRight, this);
+        zoneRight.on('pointerup', this.releaseRight, this);
+        zoneRight.on('pointerout', this.releaseRight, this);
+
+        zoneUp.setInteractive();
+        zoneUp.on('pointerdown', this.holdUp, this);
+        zoneUp.on('pointerup', this.releaseUp, this);
+        zoneUp.on('pointerout', this.releaseUp, this);
+
+        zoneDown.setInteractive();
+        zoneDown.on('pointerdown', this.holdDown, this);
+        zoneDown.on('pointerup', this.releaseDown, this);
+        zoneDown.on('pointerout', this.releaseDown, this);
+
+        zoneNitro.setInteractive();
+        zoneNitro.on('pointerdown', this.holdNitro, this);
+        zoneNitro.on('pointerup', this.releaseNitro, this);
+        zoneNitro.on('pointerout', this.releaseNitro, this);
+    }
+
+    private holdLeft() {
+        (this.player as Player).holdLeft();
+    }
+
+    private holdRight() {
+        (this.player as Player).holdRight();
+    }
+
+    private holdUp() {
+        (this.player as Player).holdUp();
+    }
+
+    private holdDown() {
+        (this.player as Player).holdDown();
+    }
+
+    private holdNitro() {
+        (this.player as Player).holdNitro();
+    }
+
+    private releaseLeft() {
+        (this.player as Player).releaseLeft();
+    }
+
+    private releaseRight() {
+        (this.player as Player).releaseRight();
+    }
+
+    private releaseUp() {
+        (this.player as Player).releaseUp();
+    }
+
+    private releaseDown() {
+        (this.player as Player).releaseDown();
+    }
+
+    private releaseNitro() {
+        (this.player as Player).releaseNitro();
     }
 }
