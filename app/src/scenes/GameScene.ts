@@ -14,7 +14,6 @@ import PopupManager from "../Components/Popup/PopupManager";
 import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
 import {SceneBase} from "./SceneBase";
 import ParseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
-import Texture = Phaser.Textures.Texture;
 
 export class GameScene extends SceneBase {
 
@@ -31,6 +30,7 @@ export class GameScene extends SceneBase {
     private collectedStars;
     private scoreText;
     private nitroText;
+    private fullscreenButton;
 
     private popupCount: number = 0;
 
@@ -208,16 +208,16 @@ export class GameScene extends SceneBase {
         let gameScale = this.sys.game.scale;
 
         // fullscreen toggle button
-        let fullScreenButton = this.add.image(gameScale.width - 24, 16, 'fullscreenSprite', 0)
+        this.fullscreenButton = this.add.image(gameScale.width - 24, 16, 'fullscreenSprite', 0)
             .setOrigin(1, 0)
             .setScrollFactor(0)
-            .setInteractive()
+            .setInteractive({useHandCursor: true})
             .on('pointerup', function () {
                 if (this.scale.isFullscreen) {
-                    fullScreenButton.setFrame(0);
+                    this.fullscreenButton.setFrame(0);
                     this.scale.stopFullscreen();
                 } else {
-                    fullScreenButton.setFrame(1);
+                    this.fullscreenButton.setFrame(1);
                     this.scale.startFullscreen();
                 }
             }, this);
@@ -227,8 +227,6 @@ export class GameScene extends SceneBase {
         settingsButton.setScrollFactor(0);
 
         settingsButton.on('pointerdown', () => {
-            // TODO: add popup window menu with items:
-            // TODO: 1. exit to main menu
             PopupManager.createWindow(this, new SettingsPopup());
         });
 
@@ -238,8 +236,7 @@ export class GameScene extends SceneBase {
 
         // touch devices has 2 pointers but desktop has only one
         if (this.input.manager.pointersTotal > 1) {
-            // REFACTOR! Also move player cursor controls here
-            // Create touch controls
+            // Create touch controls for touch devices
             this.createTouchControlZones();
         }
     }
@@ -259,6 +256,11 @@ export class GameScene extends SceneBase {
 
         let player = this.player as Player;
         this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
+
+        // на случай, если из полноэкранного режима вышли по Esc, перерисуем иконку
+        if (!this.scale.isFullscreen) {
+            this.fullscreenButton.setFrame(0);
+        }
     }
 
     public collectStar (player, star) {
@@ -409,11 +411,11 @@ export class GameScene extends SceneBase {
         this.add.text(textX, upZonePosY + zonePadding, 'Speed')
             .setScrollFactor(0)
             .setColor('0x000000')
-            .setFontSize(16);
+            .setFontSize(18);
         this.add.text(textX, upZonePosY + zonePadding + 20, 'Up')
             .setScrollFactor(0)
             .setColor('0x000000')
-            .setFontSize(16);
+            .setFontSize(18);
 
         let zoneDown = this.add.zone(downZonePosX,downZonePosY, zoneW, zoneH)
             .setOrigin(0, 0)
@@ -427,11 +429,11 @@ export class GameScene extends SceneBase {
         this.add.text(textX, downZonePosY + zonePadding, 'Speed')
             .setScrollFactor(0)
             .setColor('0x000000')
-            .setFontSize(16);
+            .setFontSize(18);
         this.add.text(textX, downZonePosY + zonePadding + 20, 'Down')
             .setScrollFactor(0)
             .setColor('0x000000')
-            .setFontSize(16);
+            .setFontSize(18);
 
 
         let nitroPadding = 10;
