@@ -6,9 +6,6 @@ Demo: https://janson-git.github.io/PhaserGamePrototype/
 
 ### A. Using `make` command:
 ```
-# to clone Phaser game engine in lib/phaser dir
-make install
-
 # to build/run docker container with node, npm and run http-server
 make up
 ```
@@ -21,9 +18,6 @@ make down
 
 ### B. Manually run bash commands one by one:
 ```
-# to clone Phaser game engine in lib/phaser dir
-git clone https://github.com/photonstorm/phaser.git ./app/lib/phaser
-
 # to build/run docker container with node, npm and run http-server
 docker-compose up -d
 docker-compose exec node npm install -g http-server

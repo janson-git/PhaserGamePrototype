@@ -14,6 +14,8 @@ import PopupManager from "../Components/Popup/PopupManager";
 import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
 import {SceneBase} from "./SceneBase";
 import ParseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
+import GameObject = Phaser.GameObjects.GameObject;
+import Sprite = Phaser.Physics.Arcade.Sprite;
 
 export class GameScene extends SceneBase {
 
@@ -27,6 +29,7 @@ export class GameScene extends SceneBase {
     private miniLayer: StaticTilemapLayer;
     private miniMapLocator: Phaser.GameObjects.Graphics;
     private stars: Phaser.Physics.Arcade.Group;
+    private nitros: Phaser.Physics.Arcade.Group;
     private collectedStars;
     private scoreText;
     private nitroText;
@@ -62,6 +65,7 @@ export class GameScene extends SceneBase {
         );
 
         this.load.image('star', 'assets/star24.png');
+        this.load.image('nitro', 'assets/nitro24.png');
         this.load.image('settingsIcon', 'assets/settingsIcon-24.png');
         this.load.image('turnLeftArrow', 'assets/turnLeftArrow.png');
         this.load.image('turnRightArrow', 'assets/turnRightArrow.png');
@@ -156,6 +160,26 @@ export class GameScene extends SceneBase {
 
         console.log('STARS PLACED!');
 
+        this.nitros = this.physics.add.group();
+        for (let i = 0; i < 3; i++) {
+            let tileX, tileY, placed = false;
+            do {
+                tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
+                tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
+                let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
+
+                if (tile.canCollide !== true) {
+                    // ставим на поле нитро
+                    placed = true;
+                    let coords = map.tileToWorldXY(tileX, tileY);
+                    let n = this.nitros.create(coords.x, coords.y, 'nitro');
+                    (n as Sprite).setTint(0xFF9933);
+                }
+            } while (placed !== true);
+        }
+
+        console.log('NITROS PLACED!');
+
         // случайным образом генерим координаты и проверяем:
         // если tail в этом месте не препятствие, то можно туда ставить игрока
         let player, playerTileX, playerTileY, playerPlaced;
@@ -188,6 +212,8 @@ export class GameScene extends SceneBase {
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
+        // Checks to player overlaps nitro and set callback to get it
+        this.physics.add.overlap(this.player, this.nitros, this.collectNitro, null, this);
 
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.setRoundPixels(true);
@@ -257,7 +283,7 @@ export class GameScene extends SceneBase {
         let player = this.player as Player;
         this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
 
-        // на случай, если из полноэкранного режима вышли по Esc, перерисуем иконку
+        // if fullscreen toggleoff by pressing Esc-button, redraw fullscreen icon
         if (!this.scale.isFullscreen) {
             this.fullscreenButton.setFrame(0);
         }
@@ -291,6 +317,12 @@ export class GameScene extends SceneBase {
             // bomb.allowGravity = false;
 
         }
+    }
+
+    public collectNitro (player, nitro: GameObject) {
+        nitro.destroy();
+
+        (this.player as Player).addNitro();
     }
 
     // Limits for player collisions handle

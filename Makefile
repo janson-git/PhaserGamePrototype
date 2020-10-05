@@ -40,11 +40,6 @@ help:  ## Справка по командам
 ## ===============================================
 #  Targets
 ## ===============================================
-install:
-# install phaser engine to project
-	@echo "Cloning phaser game engine..."
-	cd $(APP_DIR)/app/lib && git clone https://github.com/photonstorm/phaser.git
-	@echo "Done"
 
 up:
 	cd $(APP_DIR) && docker-compose up -d

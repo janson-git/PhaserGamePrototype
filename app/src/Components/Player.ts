@@ -251,8 +251,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         return this.nitroCount;
     }
 
-    public addNitro(count: number = 1): number
+    public addNitro(count: number = 1): void
     {
-        return this.nitroCount + count;
+        this.nitroCount += count;
     }
 }

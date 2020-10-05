@@ -32,17 +32,6 @@ module.exports = {
 
     mode: 'development',
 
-    /** Ну не знаю, какое-то оно кривое. Проще поставить http-server
-     * и запустить его из директории dist. После этого и работает всё норм.
-     */
-    devServer: {
-        contentBase: path.resolve(__dirname, 'dist'),
-        writeToDisk: true,
-        open: true,
-        port: 8080,
-        host: '0.0.0.0'
-    },
-
     plugins: [
         new CopyPlugin({
             patterns: [
