@@ -22,7 +22,6 @@ export class GameScene extends SceneBase {
     private MAP_WIDTH: number = 120;
     private MAP_HEIGHT: number = 120;
 
-    private USE_RANDOM_MAPS_IN_GAME: boolean = true;
     private MINIMAP_SCALE: number = 1/24;
 
     private player: GameObjectWithBody;
@@ -82,68 +81,50 @@ export class GameScene extends SceneBase {
         let miniMap: Phaser.Tilemaps.Tilemap;
         let tiles: Phaser.Tilemaps.Tileset;
 
-        if (this.USE_RANDOM_MAPS_IN_GAME === true) {
-            // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
-            let mapGenerator = new BSPMazeGenerator();
-            let levelData = mapGenerator.generateMap(this.MAP_WIDTH, this.MAP_HEIGHT, 2);
-            // генератор возвращает 0 - где проход и 1 - где блок
-            // Расставим тайлы из спрайта WaterMazeTiles
-            let tiledLevelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
+        ///////////////// GENERATE MAP
 
-            // переформатируем levelData в 2D массив для слоя коллизий
-            let chunk = 120;
-            let collideLayerData: number[][] = [];
-            for (let i = 0, j = levelData.length; i < j; i += chunk) {
-                collideLayerData.push(levelData.slice(i, i + chunk));
-            }
-            // переформатируем tiledLevelData в 2D массив для слоя тайлов (отображение)
-            let tiledLayerData: number[][] = [];
-            for (let i = 0, j = tiledLevelData.length; i < j; i += chunk) {
-                tiledLayerData.push(tiledLevelData.slice(i, i + chunk));
-            }
+        let mapGenerator = new BSPMazeGenerator();
+        let levelData = mapGenerator.generateMap(this.MAP_WIDTH, this.MAP_HEIGHT, 2);
+        // Generator returns map with 0 on passed and 1 on blocked cell
+        // Lets place tiles with sprite WaterMazeTiles
+        let tiledLevelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
 
-            // Создаём карту в своём собственном парсере, который умеет принимать
-            // несколько слоёв в конфиг
-            map = parseToMultiLayerTilemap(
-                this,
-                'map',
-                24,
-                24,
-                this.MAP_WIDTH,
-                this.MAP_HEIGHT,
-                [collideLayerData, tiledLayerData],
-                false
-            );
-
-            tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded', 26, 26, 1, 1, 1);
-
-            this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
-            this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
-
-            // Для просчёта коллизий используем слой коллизий
-            map.setCollision([1], true, false, this.collisionLayer);
-
-            miniMap = this.make.tilemap({data: tiledLayerData, tileWidth: 24, tileHeight: 24});
-        } else {
-            // ИСПОЛЬЗУЕМ КАРТУ ИЗ КОНФИГА
-            map = this.make.tilemap({ key: 'map' });
-            miniMap = this.make.tilemap({ key: 'map' });
-
-            // The first parameter is the name of the tileset in Tiled and the second parameter is the key
-            // of the tileset image used when loading the file in preload.
-            tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded');
-
-            // You can load a layer from the map using the layer name from Tiled, or by using the layer
-            // index (0 in this case).
-            this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
-            this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
-
-            // проверка коллизий будет навешена на ID тайлов от start до stop
-            map.setCollision([1], true, false, this.collisionLayer);
+        // format levelData as 2D array for collision layer
+        let chunk = 120;
+        let collideLayerData: number[][] = [];
+        for (let i = 0, j = levelData.length; i < j; i += chunk) {
+            collideLayerData.push(levelData.slice(i, i + chunk));
+        }
+        // format tiledLevelData as 2D array for visual tiles layers
+        let tiledLayerData: number[][] = [];
+        for (let i = 0, j = tiledLevelData.length; i < j; i += chunk) {
+            tiledLayerData.push(tiledLevelData.slice(i, i + chunk));
         }
 
-        // случайным образом генерим координаты и проверяем:
-        // если tail в этом месте не препятствие, то можно туда ставить звезду
+        // And pass layers to parser, to create multilayered map
+        map = parseToMultiLayerTilemap(
+            this,
+            'map',
+            24,
+            24,
+            this.MAP_WIDTH,
+            this.MAP_HEIGHT,
+            [collideLayerData, tiledLayerData],
+            false
+        );
+
+        tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded', 26, 26, 1, 1, 1);
+
+        this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
+        this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
+
+        // Set map to use '1' value of collision layer to calculate collisions
+        map.setCollision([1], true, false, this.collisionLayer);
+
+        miniMap = this.make.tilemap({data: tiledLayerData, tileWidth: 24, tileHeight: 24});
+
+        //////////////// PLACE STARS
+
         this.stars = this.physics.add.group();
         for (let i = 0; i < 10; i++) {
             let tileX, tileY, placed = false;
@@ -152,7 +133,6 @@ export class GameScene extends SceneBase {
                 tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
 
                 if (this.isFreeToPlaceWithNeighbors(tileX, tileY, map)) {
-                    // ставим на поле звёздочку
                     placed = true;
                     let coords = map.tileToWorldXY(tileX, tileY);
                     this.stars.create(coords.x, coords.y, 'star');
@@ -162,6 +142,7 @@ export class GameScene extends SceneBase {
 
         console.log('STARS PLACED!');
 
+        //////////////// PLACE NITROS
         this.nitros = this.physics.add.group();
         for (let i = 0; i < 3; i++) {
             let tileX, tileY, placed = false;
@@ -171,7 +152,6 @@ export class GameScene extends SceneBase {
                 let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
 
                 if (this.isFreeToPlaceWithNeighbors(tileX, tileY, map)) {
-                    // ставим на поле нитро
                     placed = true;
                     let coords = map.tileToWorldXY(tileX, tileY);
                     let n = this.nitros.create(coords.x, coords.y, 'nitro');
@@ -182,16 +162,13 @@ export class GameScene extends SceneBase {
 
         console.log('NITROS PLACED!');
 
-        // случайным образом генерим координаты и проверяем:
-        // если tail в этом месте не препятствие, то можно туда ставить игрока
+        //////////////// PLACE A PLAYER
         let player, playerTileX, playerTileY, playerPlaced;
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
 
-            // И клетки-соседи надо проверить: рядом должно быть тоже пусто
             if (this.isFreeToPlaceWithNeighbors(playerTileX, playerTileY, map)) {
-                // ставим на поле игрока
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
                 player = new Player(this, coords.x, coords.y);
@@ -200,7 +177,10 @@ export class GameScene extends SceneBase {
 
         this.player = player;
         this.playerBoatTrail = new BoatTrail(this, player);
+
         console.log('PLAYER PLACED!');
+
+        //////////////// SET OVERLAP BEHAVIOUR FOR STARS AND NITROS
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
@@ -211,7 +191,7 @@ export class GameScene extends SceneBase {
         this.cameras.main.setRoundPixels(true);
         this.cameras.main.startFollow(this.player, true);
 
-        //  The score
+        ////////////////  SCORE
         this.collectedStars = 0;
         let textStyle = {fontSize: '28px', fill: '#000', fontFamily: 'Arial, sans-serif'};
         this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, textStyle)
@@ -361,7 +341,7 @@ export class GameScene extends SceneBase {
     }
 
     /**
-     * Проверяем координаты тайла и его соседей. Если всё свободно - вернём true
+     * Check tile on x,y and it neighbors. On all free - return true
      * @param x
      * @param y
      * @param map

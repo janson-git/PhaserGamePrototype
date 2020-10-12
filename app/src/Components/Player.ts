@@ -28,9 +28,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene: Phaser.Scene, x: integer, y: integer) {
         super(scene, x, y, 'red_boat');
 
-        // добавляем в сцену чтобы спрайт был видим
+        // add self to scene. And now it will be visible
         this.scene.add.existing(this);
-        // добавляем в физику, чтобы учавствовать в обсчитывании столкновений
+        // and add to phisics, to get collide calculations
         this.scene.physics.add.existing(this);
     }
 
@@ -188,7 +188,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         if ((cursors.shift.isDown || this.controlsHold.nitro) && !this.isNitroActive && this.nitroCount > 0) {
-            // активировать нитро!
+            //////////////// NITRO ACTIVATED!
             this.isNitroActive = true;
             this.nitroActivatedTime = time;
             this.nitroCount--;
@@ -196,7 +196,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             console.log('nitros left: ', this.nitroCount);
         }
 
-        // если активно нитро - всегда топим скорость сразу на максимум!
+        // IF NITRO IS ACTIVE - MAX SPEEEEEED!!!
         if (this.isNitroActive) {
             let nitroTime = (time - this.nitroActivatedTime) / 1000;
             if (nitroTime < this.NITRO_DURATION_IN_SEC) {
@@ -208,12 +208,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        // после всех изменений проапдейтим горизонтальную и вертикальную скорости
+        // OK, digits are sets. Now calc velocities of player with digits
         this.updateVelocities();
 
-        // взять нужный спрайт, подставить в отображение
+        // look select sprite by direction
         let config = this.getPlayerSpriteByDirection(this, this.direction);
-        // обновляем отображаемый фрейм спрайта
         let frame = this.setFrame(config.name);
         this.setBodySize(frame.width, frame.height);
 

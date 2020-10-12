@@ -23,7 +23,7 @@ export class MyGame extends Phaser.Game {
                 width: Config.GAME_WIDTH,
                 height: Config.GAME_HEIGHT,
                 scale: {
-                    autoCenter: Center.CENTER_BOTH
+                    autoCenter: Center.CENTER_HORIZONTALLY
                 },
                 title: "Boat Game Prototype",
                 backgroundColor: '#000000',
