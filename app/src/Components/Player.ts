@@ -21,8 +21,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected SPEED_LIMIT_ON_NITRO: number = 300;
     protected NITRO_DURATION_IN_SEC: number = 3;
     protected BACKWARD_SPEED_LIMIT: number = -20;
-    protected ACCELERATION: number = 30; // m/sec^2
-    protected DECELERATION: number = 50; // m/sec^2
+    protected ACCELERATION: number = 60; // m/sec^2
+    protected DECELERATION: number = 80; // m/sec^2
     protected ROTATE_SPEED: number = 90; // Degrees per second
 
     constructor(scene: Phaser.Scene, x: integer, y: integer) {

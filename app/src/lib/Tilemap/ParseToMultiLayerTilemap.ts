@@ -16,9 +16,9 @@ import Parse2DMultiLayerArray from "./Parse2DMultiLayerArray";
  * @param {string} [key] - The key in the Phaser cache that corresponds to the loaded tilemap data.
  * @param {integer} [tileWidth=32] - The width of a tile in pixels.
  * @param {integer} [tileHeight=32] - The height of a tile in pixels.
- * @param {integer} [width=10] - The width of the map in tiles.
- * @param {integer} [height=10] - The height of the map in tiles.
- * @param {integer[][]} [data] - Instead of loading from the cache, you can also load directly from
+ * @param {integer} [width] - The width of the map in tiles.
+ * @param {integer} [height] - The height of the map in tiles.
+ * @param {integer[][]} [layersData] - Instead of loading from the cache, you can also load directly from
  * a 2D array of tile indexes.
  * @param {boolean} [insertNull=false] - Controls how empty tiles, tiles with an index of -1, in the
  * map data are handled. If `true`, empty locations will get a value of `null`. If `false`, empty
@@ -29,42 +29,47 @@ import Parse2DMultiLayerArray from "./Parse2DMultiLayerArray";
  *
  * @return {Phaser.Tilemaps.Tilemap}
  */
-export default class ParseToMultiLayerTilemap
-{
-    public static getTilemap(scene, key, tileWidth, tileHeight, width, height, data, insertNull)
-    {
-        if (tileWidth === undefined) { tileWidth = 32; }
-        if (tileHeight === undefined) { tileHeight = 32; }
-        if (width === undefined) { width = 10; }
-        if (height === undefined) { height = 10; }
-        if (insertNull === undefined) { insertNull = false; }
+export default function parseToMultiLayerTilemap(
+    scene: Phaser.Scene,
+    key: string,
+    tileWidth: integer,
+    tileHeight: integer,
+    width: integer,
+    height: integer,
+    layersData,
+    insertNull: boolean = false
+) {
+    if (tileWidth === undefined) { tileWidth = 32; }
+    if (tileHeight === undefined) { tileHeight = 32; }
+    if (width === undefined) { width = 10; }
+    if (height === undefined) { height = 10; }
+    if (insertNull === undefined) { insertNull = false; }
 
-        let mapData = null;
+    let mapData = null;
 
-        // вот здесь использовать свой новый парсер
-        // Если передали данные - генерируем из них. Если не передали - пробуем найти в кэше
-        if (Array.isArray(data)) {
-            let name = key !== undefined ? key : 'map';
-            mapData = Parse2DMultiLayerArray(name, data, width, height, tileWidth, tileHeight, insertNull);
-        } else if (key !== undefined) {
-            let tilemapData = scene.cache.tilemap.get(key);
+    // вот здесь использовать свой новый парсер
+    // Если передали данные - генерируем из них. Если не передали - пробуем найти в кэше
+    if (Array.isArray(layersData)) {
+        let name = key !== undefined ? key : 'map';
+        mapData = Parse2DMultiLayerArray(name, layersData, width, height, tileWidth, tileHeight, insertNull);
+    } else if (key !== undefined) {
+        let tilemapData = scene.cache.tilemap.get(key);
 
-            if (!tilemapData) {
-                console.warn('No map data found for key ' + key);
-            } else {
-                mapData = Parse(key, tilemapData.format, tilemapData.data, tileWidth, tileHeight, insertNull);
-            }
+        if (!tilemapData) {
+            console.warn('No map data found for key ' + key);
+        } else {
+            mapData = Parse(key, tilemapData.format, tilemapData.data, tileWidth, tileHeight, insertNull);
         }
-
-        if (mapData === null) {
-            mapData = new MapData({
-                tileWidth: tileWidth,
-                tileHeight: tileHeight,
-                width: width,
-                height: height
-            });
-        }
-
-        return new Tilemap(scene, mapData);
     }
+
+    if (mapData === null) {
+        mapData = new MapData({
+            tileWidth: tileWidth,
+            tileHeight: tileHeight,
+            width: width,
+            height: height
+        });
+    }
+
+    return new Tilemap(scene, mapData);
 }

@@ -13,11 +13,14 @@ import InGameSettingsButton from "../Components/InGameSettingsButton";
 import PopupManager from "../Components/Popup/PopupManager";
 import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
 import {SceneBase} from "./SceneBase";
-import ParseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
+import parseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
 import GameObject = Phaser.GameObjects.GameObject;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 
 export class GameScene extends SceneBase {
+
+    private MAP_WIDTH: number = 120;
+    private MAP_HEIGHT: number = 120;
 
     private USE_RANDOM_MAPS_IN_GAME: boolean = true;
     private MINIMAP_SCALE: number = 1/24;
@@ -82,7 +85,7 @@ export class GameScene extends SceneBase {
         if (this.USE_RANDOM_MAPS_IN_GAME === true) {
             // ГЕНЕРИМ КАРТУ НА КАЖДУЮ ИГРУ ЗАНОВО
             let mapGenerator = new BSPMazeGenerator();
-            let levelData = mapGenerator.generateMap(120, 120, 2);
+            let levelData = mapGenerator.generateMap(this.MAP_WIDTH, this.MAP_HEIGHT, 2);
             // генератор возвращает 0 - где проход и 1 - где блок
             // Расставим тайлы из спрайта WaterMazeTiles
             let tiledLevelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
@@ -101,13 +104,13 @@ export class GameScene extends SceneBase {
 
             // Создаём карту в своём собственном парсере, который умеет принимать
             // несколько слоёв в конфиг
-            map = ParseToMultiLayerTilemap.getTilemap(
+            map = parseToMultiLayerTilemap(
                 this,
                 'map',
                 24,
                 24,
-                120,
-                120,
+                this.MAP_WIDTH,
+                this.MAP_HEIGHT,
                 [collideLayerData, tiledLayerData],
                 false
             );
@@ -147,9 +150,8 @@ export class GameScene extends SceneBase {
             do {
                 tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
                 tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-                let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
 
-                if (tile.canCollide !== true) {
+                if (this.isFreeToPlaceWithNeighbors(tileX, tileY, map)) {
                     // ставим на поле звёздочку
                     placed = true;
                     let coords = map.tileToWorldXY(tileX, tileY);
@@ -168,7 +170,7 @@ export class GameScene extends SceneBase {
                 tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
                 let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
 
-                if (tile.canCollide !== true) {
+                if (this.isFreeToPlaceWithNeighbors(tileX, tileY, map)) {
                     // ставим на поле нитро
                     placed = true;
                     let coords = map.tileToWorldXY(tileX, tileY);
@@ -186,19 +188,9 @@ export class GameScene extends SceneBase {
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-            let tile = map.getTileAt(playerTileX, playerTileY, true, this.collisionLayer);
 
             // И клетки-соседи надо проверить: рядом должно быть тоже пусто
-            if (tile.canCollide !== true
-                && map.getTileAt(playerTileX - 1, playerTileY - 1).canCollide !== true
-                && map.getTileAt(playerTileX, playerTileY - 1).canCollide !== true
-                && map.getTileAt(playerTileX + 1, playerTileY - 1).canCollide !== true
-                && map.getTileAt(playerTileX - 1, playerTileY).canCollide !== true
-                && map.getTileAt(playerTileX + 1, playerTileY).canCollide !== true
-                && map.getTileAt(playerTileX - 1, playerTileY + 1).canCollide !== true
-                && map.getTileAt(playerTileX, playerTileY + 1).canCollide !== true
-                && map.getTileAt(playerTileX + 1, playerTileY + 1).canCollide !== true
-            ) {
+            if (this.isFreeToPlaceWithNeighbors(playerTileX, playerTileY, map)) {
                 // ставим на поле игрока
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
@@ -366,6 +358,27 @@ export class GameScene extends SceneBase {
         this.miniMapLocator.setPosition(10, this.gameHeight - 130, 130, 130);
 
         miniMapContainer.addMultiple([miniMapBg, this.miniLayer, this.miniMapLocator]);
+    }
+
+    /**
+     * Проверяем координаты тайла и его соседей. Если всё свободно - вернём true
+     * @param x
+     * @param y
+     * @param map
+     */
+    private isFreeToPlaceWithNeighbors(x: number, y: number, map): boolean
+    {
+        let tile = map.getTileAt(x, y, true, this.collisionLayer);
+
+        return tile.canCollide !== true
+        && map.getTileAt(x - 1, y - 1).canCollide !== true
+        && map.getTileAt(x, y - 1).canCollide !== true
+        && map.getTileAt(x + 1, y - 1).canCollide !== true
+        && map.getTileAt(x - 1, y).canCollide !== true
+        && map.getTileAt(x + 1, y).canCollide !== true
+        && map.getTileAt(x - 1, y + 1).canCollide !== true
+        && map.getTileAt(x, y + 1).canCollide !== true
+        && map.getTileAt(x + 1, y + 1).canCollide !== true;
     }
 
     private createTouchControlZones()
