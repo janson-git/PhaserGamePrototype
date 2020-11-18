@@ -9,6 +9,10 @@ module.exports = {
         vendors: ['phaser'],
     },
 
+    watchOptions: {
+        ignored: /node_modules/
+    },
+
     module: {
         rules: [
             {
