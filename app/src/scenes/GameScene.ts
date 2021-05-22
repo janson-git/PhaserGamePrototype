@@ -247,6 +247,9 @@ export class GameScene extends SceneBase {
         this.game.events.on('GO_TO_MAIN_MENU', () => {
             this.scene.start('Hello');
         });
+        this.game.events.on('LEVEL_COMPLETED', () => {
+            PopupManager.createWindow(this, new LevelCompletedPopup());
+        });
         this.game.events.on('GO_TO_NEXT_LEVEL', () => {
             this.cameras.main.fadeOut(500);
             this.time.addEvent({
@@ -298,7 +301,7 @@ export class GameScene extends SceneBase {
         if (this.stars.countActive(true) === 0) {
             console.log('ALL STARS COLLECTED!!!');
 
-            this.game.events.emit('GO_TO_NEXT_LEVEL');
+            this.game.events.emit('LEVEL_COMPLETED');
         }
     }
 
