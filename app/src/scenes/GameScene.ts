@@ -18,6 +18,7 @@ import parseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
 import GameObject = Phaser.GameObjects.GameObject;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import LevelCompletedPopup from "../Components/Popup/Popups/LevelCompletedPopup";
+import {RedCarPlayer} from "../Components/RedCarPlayer";
 
 export class GameScene extends SceneBase {
 
@@ -70,6 +71,12 @@ export class GameScene extends SceneBase {
             'boat_trail',
             'assets/atlas/boatsSpriteListTransparent.png',
             'assets/atlas/boatTrailSpriteListConfig.json'
+        );
+
+        this.load.atlas(
+            'red_car',
+            'assets/atlas/carsSpriteListTransparent.png',
+            'assets/atlas/carsSpriteListConfig.json'
         );
 
         this.load.spritesheet(
@@ -184,7 +191,8 @@ export class GameScene extends SceneBase {
             if (this.isFreeToPlaceWithNeighbors(playerTileX, playerTileY, map)) {
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
-                player = new Player(this, coords.x, coords.y);
+                // player = new Player(this, coords.x, coords.y);
+                player = new RedCarPlayer(this, coords.x, coords.y);
             }
         } while (playerPlaced !== true);
 

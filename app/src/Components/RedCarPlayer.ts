@@ -1,7 +1,8 @@
 import * as Phaser from "phaser";
+import {Player} from "./Player";
 
-export class Player extends Phaser.Physics.Arcade.Sprite {
-    protected playerSpriteRotateSize = 11.25; // 11.25 градусов на спрайт
+export class RedCarPlayer extends Player {
+    protected playerSpriteRotateSize = 22.5; // градусов дуги на спрайт
     protected direction: number = 0;
     protected speed: number = 0;
 
@@ -25,126 +26,51 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected DECELERATION: number = 80; // m/sec^2
     protected ROTATE_SPEED: number = 90; // Degrees per second
 
-    constructor(scene: Phaser.Scene, x: integer, y: integer, textureName: string = 'red_boat') {
+    constructor(scene: Phaser.Scene, x: integer, y: integer, textureName: string = 'red_car') {
         super(scene, x, y, textureName);
-
-        // add self to scene. And now it will be visible
-        this.scene.add.existing(this);
-        // and add to phisics, to get collide calculations
-        this.scene.physics.add.existing(this);
     }
 
     protected getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
         let halfStep = this.playerSpriteRotateSize / 2;
-        // 5.625 - половина от шага поворота. Спрайт смотрит в определённый угол и плюс-минус половина шага.
         let index = 0;
 
         if ( (directionInDeg > (360 - halfStep)) || directionInDeg < halfStep) {
-            index = 0;
-        } else if ( (directionInDeg > (11.25 - halfStep)) && (directionInDeg < (11.25 + halfStep)) ) {
-            index = 1;
-        } else if (directionInDeg > (22.5 - halfStep) && directionInDeg < (22.5 + halfStep)) {
-            index = 2;
-        } else if (directionInDeg > (33.75 - halfStep) && directionInDeg < (33.75 + halfStep)) {
-            index = 3;
-        } else if (directionInDeg > (45 - halfStep) && directionInDeg < (45 + halfStep)) {
-            index = 4;
-        } else if (directionInDeg > (56.25 - halfStep) && directionInDeg < (56.25 + halfStep)) {
-            index = 5;
-        } else if (directionInDeg > (67.5 - halfStep) && directionInDeg < (67.5 + halfStep)) {
             index = 6;
-        } else if (directionInDeg > (78.75 - halfStep) && directionInDeg < (78.75 + halfStep)) {
+        } else if (directionInDeg > (22.5 - halfStep) && directionInDeg < (22.5 + halfStep)) {
             index = 7;
-        } else if (directionInDeg > (90 - halfStep) && directionInDeg < (90 + halfStep)) {
+        } else if (directionInDeg > (45 - halfStep) && directionInDeg < (45 + halfStep)) {
             index = 8;
-        } else if (directionInDeg > (101.25 - halfStep) && directionInDeg < (101.25 + halfStep)) {
+        } else if (directionInDeg > (67.5 - halfStep) && directionInDeg < (67.5 + halfStep)) {
             index = 9;
-        } else if (directionInDeg > (112.5 - halfStep) && directionInDeg < (112.5 + halfStep)) {
+        } else if (directionInDeg > (90 - halfStep) && directionInDeg < (90 + halfStep)) {
             index = 10;
-        } else if (directionInDeg > (123.75 - halfStep) && directionInDeg < (123.75 + halfStep)) {
+        } else if (directionInDeg > (112.5 - halfStep) && directionInDeg < (112.5 + halfStep)) {
             index = 11;
         } else if (directionInDeg > (135 - halfStep) && directionInDeg < (135 + halfStep)) {
             index = 12;
-        } else if (directionInDeg > (146.25 - halfStep) && directionInDeg < (146.25 + halfStep)) {
-            index = 13;
         } else if (directionInDeg > (157.5 - halfStep) && directionInDeg < (157.5 + halfStep)) {
-            index = 14;
-        } else if (directionInDeg > (168.75 - halfStep) && directionInDeg < (168.75 + halfStep)) {
-            index = 15;
+            index = 13;
         } else if (directionInDeg > (180 - halfStep) && directionInDeg < (180 + halfStep)) {
-            index = 16;
-        } else if (directionInDeg > (191.25 - halfStep) && directionInDeg < (191.25 + halfStep)) {
-            index = 17;
+            index = 14;
         } else if (directionInDeg > (202.5 - halfStep) && directionInDeg < (202.5 + halfStep)) {
-            index = 18;
-        } else if (directionInDeg > (213.75 - halfStep) && directionInDeg < (213.75 + halfStep)) {
-            index = 19;
+            index = 15;
         } else if (directionInDeg > (225 - halfStep) && directionInDeg < (225 + halfStep)) {
-            index = 20;
-        } else if (directionInDeg > (236.25 - halfStep) && directionInDeg < (236.25 + halfStep)) {
-            index = 21;
+            // TODO: this sprite "jump up" relative other! MAGIC!
+            index = 0;
         } else if (directionInDeg > (247.5 - halfStep) && directionInDeg < (247.5 + halfStep)) {
-            index = 22;
-        } else if (directionInDeg > (258.75 - halfStep) && directionInDeg < (258.75 + halfStep)) {
-            index = 23;
+            index = 1;
         } else if (directionInDeg > (270 - halfStep) && directionInDeg < (270 + halfStep)) {
-            index = 24;
-        } else if (directionInDeg > (281.25 - halfStep) && directionInDeg < (281.25 + halfStep)) {
-            index = 25;
+            index = 2;
         } else if (directionInDeg > (292.5 - halfStep) && directionInDeg < (292.5 + halfStep)) {
-            index = 26;
-        } else if (directionInDeg > (303.75 - halfStep) && directionInDeg < (303.75 + halfStep)) {
-            index = 27;
+            index = 3;
         } else if (directionInDeg > (315 - halfStep) && directionInDeg < (315 + halfStep)) {
-            index = 28;
-        } else if (directionInDeg > (326.25 - halfStep) && directionInDeg < (326.25 + halfStep)) {
-            index = 29;
+            index = 4;
         } else if (directionInDeg > (337.5 - halfStep) && directionInDeg < (337.5 + halfStep)) {
-            index = 30;
-        } else if (directionInDeg > (348.75 - halfStep) && directionInDeg < (348.75 + halfStep)) {
-            index = 31;
+            index = 5;
         }
 
-        let num = index;
-        if (index > 16) {
-            num = 32 - index;
-            return {name: 'red_boat_' + num, flipX: true};
-        }
-        return {name: 'red_boat_' + num, flipX: false};
+        return {name: 'red_car_' + index, flipX: false};
     };
-
-    public holdLeft() {
-        this.controlsHold.left = true;
-    }
-    public holdRight() {
-        this.controlsHold.right = true;
-    }
-    public holdUp() {
-        this.controlsHold.up = true;
-    }
-    public holdDown() {
-        this.controlsHold.down = true;
-    }
-    public releaseLeft() {
-        this.controlsHold.left = false;
-    }
-    public releaseRight() {
-        this.controlsHold.right = false;
-    }
-    public releaseUp() {
-        this.controlsHold.up = false;
-    }
-    public releaseDown() {
-        this.controlsHold.down = false;
-    }
-
-    public holdNitro() {
-        this.controlsHold.nitro = true;
-    }
-
-    public releaseNitro() {
-        this.controlsHold.nitro = false;
-    }
 
     public update(time, delta) {
         let tDiff = delta / 1000;
@@ -217,41 +143,5 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.setBodySize(frame.width, frame.height);
 
         this.flipX = config.flipX || false;
-    }
-
-    protected updateVelocities() {
-        let directionInRad = this.direction * Math.PI / 180;
-        this.setVelocityX(this.speed * Math.sin(directionInRad));
-        this.setVelocityY(-1 * this.speed * Math.cos(directionInRad));
-    }
-
-    public getDirection(): number
-    {
-        return this.direction;
-    }
-
-    public setDirection(direction: number): void
-    {
-        this.direction = direction;
-    }
-
-    public getSpeed(): number
-    {
-        return this.speed;
-    }
-
-    public setSpeed(speed: number): void
-    {
-        this.speed = speed;
-    }
-
-    public getNitroCount(): number
-    {
-        return this.nitroCount;
-    }
-
-    public addNitro(count: number = 1): void
-    {
-        this.nitroCount += count;
     }
 }
