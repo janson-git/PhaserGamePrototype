@@ -213,10 +213,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // look select sprite by direction
         let config = this.getPlayerSpriteByDirection(this, this.direction);
-        let frame = this.setFrame(config.name);
-        this.setBodySize(frame.width, frame.height);
+        this.setFrameData(config.name);
 
         this.flipX = config.flipX || false;
+    }
+
+    protected setFrameData(frameName: string|integer): void
+    {
+        let frame = this.setFrame(frameName);
+        this.setBodySize(frame.width, frame.height);
     }
 
     protected updateVelocities() {

@@ -169,7 +169,6 @@ export class GameScene extends SceneBase {
             do {
                 tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
                 tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-                let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
 
                 if (this.isFreeToPlaceWithNeighbors(tileX, tileY, map)) {
                     placed = true;
@@ -184,6 +183,8 @@ export class GameScene extends SceneBase {
 
         //////////////// PLACE A PLAYER
         let player, playerTileX, playerTileY, playerPlaced;
+        player = this.createPlayer();
+
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
@@ -191,8 +192,7 @@ export class GameScene extends SceneBase {
             if (this.isFreeToPlaceWithNeighbors(playerTileX, playerTileY, map)) {
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
-                // player = new Player(this, coords.x, coords.y);
-                player = new RedCarPlayer(this, coords.x, coords.y);
+                player.setPosition(coords.x, coords.y);
             }
         } while (playerPlaced !== true);
 
@@ -592,5 +592,17 @@ export class GameScene extends SceneBase {
             tiles = map.addTilesetImage('stoneMaze', 'stoneTilesExtruded', 26, 26, 1, 1, 1);
         }
         return tiles;
+    }
+
+    private createPlayer(): Player
+    {
+        let player;
+        if (this.level % 2 === 0) {
+            player = new Player(this, 0, 0);
+        } else {
+            player = new RedCarPlayer(this, 0, 0);
+        }
+
+        return player;
     }
 }

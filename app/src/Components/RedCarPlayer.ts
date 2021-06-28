@@ -55,7 +55,6 @@ export class RedCarPlayer extends Player {
         } else if (directionInDeg > (202.5 - halfStep) && directionInDeg < (202.5 + halfStep)) {
             index = 15;
         } else if (directionInDeg > (225 - halfStep) && directionInDeg < (225 + halfStep)) {
-            // TODO: this sprite "jump up" relative other! MAGIC!
             index = 0;
         } else if (directionInDeg > (247.5 - halfStep) && directionInDeg < (247.5 + halfStep)) {
             index = 1;
@@ -72,76 +71,10 @@ export class RedCarPlayer extends Player {
         return {name: 'red_car_' + index, flipX: false};
     };
 
-    public update(time, delta) {
-        let tDiff = delta / 1000;
-        let cursors = this.scene.input.keyboard.createCursorKeys();
-
-        if (cursors.left.isDown || this.controlsHold.left) {
-            this.direction -= (this.ROTATE_SPEED * tDiff);
-            if (this.direction < 0) {
-                this.direction = 360 - (this.direction);
-            }
-        } else if (cursors.right.isDown || this.controlsHold.right) {
-            this.direction += (this.ROTATE_SPEED * tDiff);
-            if (this.direction > 360) {
-                this.direction = this.direction - 360;
-            }
-        }
-        if (cursors.up.isDown || this.controlsHold.up) {
-            this.speed += (this.ACCELERATION * tDiff);
-            if (this.speed > this.SPEED_LIMIT) {
-                this.speed = this.SPEED_LIMIT;
-            }
-        } else if (cursors.down.isDown) {
-            this.speed -= (this.DECELERATION * tDiff);
-            if (this.speed < this.BACKWARD_SPEED_LIMIT) {
-                this.speed = this.BACKWARD_SPEED_LIMIT;
-            }
-        }
-
-        if (cursors.space.isDown|| this.controlsHold.down) {
-            if (this.speed > 0) {
-                this.speed -= (this.DECELERATION * tDiff);
-                if (this.speed < 0) {
-                    this.speed = 0;
-                }
-            } else if (this.speed < 0) {
-                this.speed += (this.DECELERATION * tDiff);
-                if (this.speed > 0) {
-                    this.speed = 0;
-                }
-            }
-        }
-
-        if ((cursors.shift.isDown || this.controlsHold.nitro) && !this.isNitroActive && this.nitroCount > 0) {
-            //////////////// NITRO ACTIVATED!
-            this.isNitroActive = true;
-            this.nitroActivatedTime = time;
-            this.nitroCount--;
-            console.log('is nitro active: ', this.isNitroActive);
-            console.log('nitros left: ', this.nitroCount);
-        }
-
-        // IF NITRO IS ACTIVE - MAX SPEEEEEED!!!
-        if (this.isNitroActive) {
-            let nitroTime = (time - this.nitroActivatedTime) / 1000;
-            if (nitroTime < this.NITRO_DURATION_IN_SEC) {
-                this.speed = this.SPEED_LIMIT_ON_NITRO;
-            } else {
-                this.isNitroActive = false;
-                this.nitroActivatedTime = 0;
-                this.speed = this.SPEED_LIMIT;
-            }
-        }
-
-        // OK, digits are sets. Now calc velocities of player with digits
-        this.updateVelocities();
-
-        // look select sprite by direction
-        let config = this.getPlayerSpriteByDirection(this, this.direction);
-        let frame = this.setFrame(config.name);
+    protected setFrameData(frameName: string|integer): void
+    {
+        let frame = this.setFrame(frameName);
         this.setBodySize(frame.width, frame.height);
-
-        this.flipX = config.flipX || false;
+        this.setScale(0.7);
     }
 }
