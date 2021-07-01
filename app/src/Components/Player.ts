@@ -25,8 +25,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected DECELERATION: number = 80; // m/sec^2
     protected ROTATE_SPEED: number = 90; // Degrees per second
 
-    constructor(scene: Phaser.Scene, x: integer, y: integer) {
-        super(scene, x, y, 'red_boat');
+    constructor(scene: Phaser.Scene, x: integer, y: integer, textureName: string = 'red_boat') {
+        super(scene, x, y, textureName);
 
         // add self to scene. And now it will be visible
         this.scene.add.existing(this);
@@ -34,7 +34,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.physics.add.existing(this);
     }
 
-    private getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
+    protected getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
         let halfStep = this.playerSpriteRotateSize / 2;
         // 5.625 - половина от шага поворота. Спрайт смотрит в определённый угол и плюс-минус половина шага.
         let index = 0;
@@ -213,13 +213,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // look select sprite by direction
         let config = this.getPlayerSpriteByDirection(this, this.direction);
-        let frame = this.setFrame(config.name);
-        this.setBodySize(frame.width, frame.height);
+        this.setFrameData(config.name);
 
         this.flipX = config.flipX || false;
     }
 
-    private updateVelocities() {
+    protected setFrameData(frameName: string|integer): void
+    {
+        let frame = this.setFrame(frameName);
+        this.setBodySize(frame.width, frame.height);
+    }
+
+    protected updateVelocities() {
         let directionInRad = this.direction * Math.PI / 180;
         this.setVelocityX(this.speed * Math.sin(directionInRad));
         this.setVelocityY(-1 * this.speed * Math.cos(directionInRad));

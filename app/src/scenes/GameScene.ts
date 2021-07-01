@@ -5,7 +5,8 @@ import BSPMazeGenerator from "../lib/BSPMazeGenerator";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
 import BlendModes = Phaser.BlendModes;
-import WaterMazeTilesProcessor from "../lib/WaterMaze/WaterMazeTilesProcessor";
+import WaterMazeTilesProcessor from "../lib/Maze/WaterMazeTilesProcessor";
+import StoneMazeTilesProcessor from "../lib/Maze/StoneMazeTilesProcessor";
 import {BoatTrail} from "../Components/BoatTrail";
 import Tilemap = Phaser.Tilemaps.Tilemap;
 import Tileset = Phaser.Tilemaps.Tileset;
@@ -16,6 +17,8 @@ import {SceneBase} from "./SceneBase";
 import parseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
 import GameObject = Phaser.GameObjects.GameObject;
 import Sprite = Phaser.Physics.Arcade.Sprite;
+import LevelCompletedPopup from "../Components/Popup/Popups/LevelCompletedPopup";
+import {RedCarPlayer} from "../Components/RedCarPlayer";
 
 export class GameScene extends SceneBase {
 
@@ -23,6 +26,9 @@ export class GameScene extends SceneBase {
     private MAP_HEIGHT: number = 120;
 
     private MINIMAP_SCALE: number = 1/24;
+
+    private STARS_ON_LEVEL = 10;
+    private NITROS_ON_LEVEL = 3;
 
     private player: GameObjectWithBody;
     private playerBoatTrail: GameObjectWithBody;
@@ -35,7 +41,9 @@ export class GameScene extends SceneBase {
     private collectedStars;
     private scoreText;
     private nitroText;
+    private levelText;
     private fullscreenButton;
+    private level: number;
 
     private popupCount: number = 0;
 
@@ -45,6 +53,11 @@ export class GameScene extends SceneBase {
             visible: false,
             key: 'Game',
         });
+    }
+
+    public init(props) {
+        const {level = 0} = props;
+        this.level = level;
     }
 
     public preload() {
@@ -60,6 +73,12 @@ export class GameScene extends SceneBase {
             'assets/atlas/boatTrailSpriteListConfig.json'
         );
 
+        this.load.atlas(
+            'red_car',
+            'assets/atlas/carsSpriteListTransparent.png',
+            'assets/atlas/carsSpriteListConfig.json'
+        );
+
         this.load.spritesheet(
             'fullscreenSprite',
             'assets/fullscreenSprite.png',
@@ -73,6 +92,8 @@ export class GameScene extends SceneBase {
         this.load.image('turnRightArrow', 'assets/turnRightArrow.png');
 
         this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
+        this.load.image('stoneTilesExtruded', 'assets/tilemaps/StoneMazeTilesExtruded.png');
+
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
     }
 
@@ -83,14 +104,13 @@ export class GameScene extends SceneBase {
 
         ///////////////// GENERATE MAP
 
-        let mapGenerator = new BSPMazeGenerator();
-        let levelData = mapGenerator.generateMap(this.MAP_WIDTH, this.MAP_HEIGHT, 2);
+        let levelData = this.generateLevelData();
         // Generator returns map with 0 on passed and 1 on blocked cell
-        // Lets place tiles with sprite WaterMazeTiles
-        let tiledLevelData = WaterMazeTilesProcessor.placeTiles(levelData, 120);
+        // Lets place tiles with level sprite
+        let tiledLevelData = this.generateLevelTiles(levelData);
 
         // format levelData as 2D array for collision layer
-        let chunk = 120;
+        let chunk = this.MAP_WIDTH;
         let collideLayerData: number[][] = [];
         for (let i = 0, j = levelData.length; i < j; i += chunk) {
             collideLayerData.push(levelData.slice(i, i + chunk));
@@ -113,7 +133,7 @@ export class GameScene extends SceneBase {
             false
         );
 
-        tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded', 26, 26, 1, 1, 1);
+        tiles = this.updateMapTiles(map);
 
         this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
         this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
@@ -126,7 +146,7 @@ export class GameScene extends SceneBase {
         //////////////// PLACE STARS
 
         this.stars = this.physics.add.group();
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < this.STARS_ON_LEVEL; i++) {
             let tileX, tileY, placed = false;
             do {
                 tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
@@ -144,12 +164,11 @@ export class GameScene extends SceneBase {
 
         //////////////// PLACE NITROS
         this.nitros = this.physics.add.group();
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < this.NITROS_ON_LEVEL; i++) {
             let tileX, tileY, placed = false;
             do {
                 tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
                 tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
-                let tile = map.getTileAt(tileX, tileY, true, this.collisionLayer);
 
                 if (this.isFreeToPlaceWithNeighbors(tileX, tileY, map)) {
                     placed = true;
@@ -164,6 +183,8 @@ export class GameScene extends SceneBase {
 
         //////////////// PLACE A PLAYER
         let player, playerTileX, playerTileY, playerPlaced;
+        player = this.createPlayer();
+
         do {
             playerTileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
             playerTileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
@@ -171,7 +192,7 @@ export class GameScene extends SceneBase {
             if (this.isFreeToPlaceWithNeighbors(playerTileX, playerTileY, map)) {
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
-                player = new Player(this, coords.x, coords.y);
+                player.setPosition(coords.x, coords.y);
             }
         } while (playerPlaced !== true);
 
@@ -194,11 +215,14 @@ export class GameScene extends SceneBase {
         ////////////////  SCORE
         this.collectedStars = 0;
         let textStyle = {fontSize: '28px', fill: '#000', fontFamily: 'Arial, sans-serif'};
-        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из 10`, textStyle)
+        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из ${this.STARS_ON_LEVEL}`, textStyle)
             .setScrollFactor(0);
 
         this.nitroText = this.add.text(this.gameWidth - 200, 16, `НИТРО: ${player.getNitroCount()}`, textStyle)
             .setScrollFactor(0).setFontSize(20);
+
+        this.levelText = this.add.text(this.gameWidth - 70, this.gameHeight - 20, `Level: ${this.level}`, textStyle)
+            .setScrollFactor(0).setFontSize(12);
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
@@ -230,6 +254,20 @@ export class GameScene extends SceneBase {
 
         this.game.events.on('GO_TO_MAIN_MENU', () => {
             this.scene.start('Hello');
+        });
+        this.game.events.on('LEVEL_COMPLETED', () => {
+            PopupManager.createWindow(this, new LevelCompletedPopup());
+        });
+        this.game.events.on('GO_TO_NEXT_LEVEL', () => {
+            this.cameras.main.fadeOut(500);
+            this.time.addEvent({
+                delay: 500,
+                callback: () => {
+                    this.scene.restart({level: this.level + 1});
+                    this.cameras.main.fadeIn(500);
+                }
+            });
+
         });
 
         // touch devices has 2 pointers but desktop has only one
@@ -266,28 +304,12 @@ export class GameScene extends SceneBase {
 
         //  Add and update the score
         this.collectedStars += 1;
-        this.scoreText.setText(`Собрано звёзд: ${this.collectedStars} из 10`);
+        this.scoreText.setText(`Собрано звёзд: ${this.collectedStars} из ${this.STARS_ON_LEVEL}`);
 
         if (this.stars.countActive(true) === 0) {
-            this.scoreText.setText(
-                `Собрано звёзд: ${this.collectedStars} из 10`
-            );
             console.log('ALL STARS COLLECTED!!!');
-            //  A new batch of stars to collect
-            // this.stars.children.iterate(function (child) {
-            //
-            //     child.enableBody(true, child.x, 0, true, true);
-            //
-            // });
 
-            // var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-            //
-            // var bomb = bombs.create(x, 16, 'bomb');
-            // bomb.setBounce(1);
-            // bomb.setCollideWorldBounds(true);
-            // bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-            // bomb.allowGravity = false;
-
+            this.game.events.emit('LEVEL_COMPLETED');
         }
     }
 
@@ -542,5 +564,45 @@ export class GameScene extends SceneBase {
 
     private releaseNitro() {
         (this.player as Player).releaseNitro();
+    }
+
+    private generateLevelData(): number[]
+    {
+        let mapGenerator = new BSPMazeGenerator();
+        return mapGenerator.generateMap(this.MAP_WIDTH, this.MAP_HEIGHT, 2);
+    }
+
+    private generateLevelTiles(levelData: number[]): number[]
+    {
+        let tiledLevelData = [];
+        if (this.level % 2 === 0) {
+            tiledLevelData = WaterMazeTilesProcessor.placeTiles(levelData, this.MAP_WIDTH);
+        } else {
+            tiledLevelData = StoneMazeTilesProcessor.placeTiles(levelData, this.MAP_WIDTH);
+        }
+        return tiledLevelData;
+    }
+
+    private updateMapTiles(map: Phaser.Tilemaps.Tilemap): Phaser.Tilemaps.Tileset
+    {
+        let tiles: Phaser.Tilemaps.Tileset;
+        if (this.level % 2 === 0) {
+            tiles = map.addTilesetImage('waterAndGrass', 'tilesExtruded', 26, 26, 1, 1, 1);
+        } else {
+            tiles = map.addTilesetImage('stoneMaze', 'stoneTilesExtruded', 26, 26, 1, 1, 1);
+        }
+        return tiles;
+    }
+
+    private createPlayer(): Player
+    {
+        let player;
+        if (this.level % 2 === 0) {
+            player = new Player(this, 0, 0);
+        } else {
+            player = new RedCarPlayer(this, 0, 0);
+        }
+
+        return player;
     }
 }
