@@ -36,73 +36,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     protected getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
         let halfStep = this.playerSpriteRotateSize / 2;
-        // 5.625 - половина от шага поворота. Спрайт смотрит в определённый угол и плюс-минус половина шага.
-        let index = 0;
+        let index = Math.round(directionInDeg / this.playerSpriteRotateSize);
 
+        // sprite indexes starts from 0 (on 0 degrees) to 16 (on 180 degrees).
+        // After 180 will be indexed from 16 to 0 and mirrored
+
+        // check rotate through 360 degrees
         if ( (directionInDeg > (360 - halfStep)) || directionInDeg < halfStep) {
             index = 0;
-        } else if ( (directionInDeg > (11.25 - halfStep)) && (directionInDeg < (11.25 + halfStep)) ) {
-            index = 1;
-        } else if (directionInDeg > (22.5 - halfStep) && directionInDeg < (22.5 + halfStep)) {
-            index = 2;
-        } else if (directionInDeg > (33.75 - halfStep) && directionInDeg < (33.75 + halfStep)) {
-            index = 3;
-        } else if (directionInDeg > (45 - halfStep) && directionInDeg < (45 + halfStep)) {
-            index = 4;
-        } else if (directionInDeg > (56.25 - halfStep) && directionInDeg < (56.25 + halfStep)) {
-            index = 5;
-        } else if (directionInDeg > (67.5 - halfStep) && directionInDeg < (67.5 + halfStep)) {
-            index = 6;
-        } else if (directionInDeg > (78.75 - halfStep) && directionInDeg < (78.75 + halfStep)) {
-            index = 7;
-        } else if (directionInDeg > (90 - halfStep) && directionInDeg < (90 + halfStep)) {
-            index = 8;
-        } else if (directionInDeg > (101.25 - halfStep) && directionInDeg < (101.25 + halfStep)) {
-            index = 9;
-        } else if (directionInDeg > (112.5 - halfStep) && directionInDeg < (112.5 + halfStep)) {
-            index = 10;
-        } else if (directionInDeg > (123.75 - halfStep) && directionInDeg < (123.75 + halfStep)) {
-            index = 11;
-        } else if (directionInDeg > (135 - halfStep) && directionInDeg < (135 + halfStep)) {
-            index = 12;
-        } else if (directionInDeg > (146.25 - halfStep) && directionInDeg < (146.25 + halfStep)) {
-            index = 13;
-        } else if (directionInDeg > (157.5 - halfStep) && directionInDeg < (157.5 + halfStep)) {
-            index = 14;
-        } else if (directionInDeg > (168.75 - halfStep) && directionInDeg < (168.75 + halfStep)) {
-            index = 15;
-        } else if (directionInDeg > (180 - halfStep) && directionInDeg < (180 + halfStep)) {
-            index = 16;
-        } else if (directionInDeg > (191.25 - halfStep) && directionInDeg < (191.25 + halfStep)) {
-            index = 17;
-        } else if (directionInDeg > (202.5 - halfStep) && directionInDeg < (202.5 + halfStep)) {
-            index = 18;
-        } else if (directionInDeg > (213.75 - halfStep) && directionInDeg < (213.75 + halfStep)) {
-            index = 19;
-        } else if (directionInDeg > (225 - halfStep) && directionInDeg < (225 + halfStep)) {
-            index = 20;
-        } else if (directionInDeg > (236.25 - halfStep) && directionInDeg < (236.25 + halfStep)) {
-            index = 21;
-        } else if (directionInDeg > (247.5 - halfStep) && directionInDeg < (247.5 + halfStep)) {
-            index = 22;
-        } else if (directionInDeg > (258.75 - halfStep) && directionInDeg < (258.75 + halfStep)) {
-            index = 23;
-        } else if (directionInDeg > (270 - halfStep) && directionInDeg < (270 + halfStep)) {
-            index = 24;
-        } else if (directionInDeg > (281.25 - halfStep) && directionInDeg < (281.25 + halfStep)) {
-            index = 25;
-        } else if (directionInDeg > (292.5 - halfStep) && directionInDeg < (292.5 + halfStep)) {
-            index = 26;
-        } else if (directionInDeg > (303.75 - halfStep) && directionInDeg < (303.75 + halfStep)) {
-            index = 27;
-        } else if (directionInDeg > (315 - halfStep) && directionInDeg < (315 + halfStep)) {
-            index = 28;
-        } else if (directionInDeg > (326.25 - halfStep) && directionInDeg < (326.25 + halfStep)) {
-            index = 29;
-        } else if (directionInDeg > (337.5 - halfStep) && directionInDeg < (337.5 + halfStep)) {
-            index = 30;
-        } else if (directionInDeg > (348.75 - halfStep) && directionInDeg < (348.75 + halfStep)) {
-            index = 31;
         }
 
         let num = index;
@@ -150,17 +91,34 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         let tDiff = delta / 1000;
         let cursors = this.scene.input.keyboard.createCursorKeys();
 
-        if (cursors.left.isDown || this.controlsHold.left) {
-            this.direction -= (this.ROTATE_SPEED * tDiff);
-            if (this.direction < 0) {
-                this.direction = 360 - (this.direction);
+        if (this.speed < 0) {
+            // rear move rotate logic
+            if (cursors.left.isDown || this.controlsHold.left) {
+                this.direction += (this.ROTATE_SPEED * tDiff);
+                if (this.direction > 360) {
+                    this.direction = this.direction - 360;
+                }
+            } else if (cursors.right.isDown || this.controlsHold.right) {
+                this.direction -= (this.ROTATE_SPEED * tDiff);
+                if (this.direction < 0) {
+                    this.direction = 360 - (this.direction);
+                }
             }
-        } else if (cursors.right.isDown || this.controlsHold.right) {
-            this.direction += (this.ROTATE_SPEED * tDiff);
-            if (this.direction > 360) {
-                this.direction = this.direction - 360;
+        } else {
+            // front move rotate logic
+            if (cursors.left.isDown || this.controlsHold.left) {
+                this.direction -= (this.ROTATE_SPEED * tDiff);
+                if (this.direction < 0) {
+                    this.direction = 360 - (this.direction);
+                }
+            } else if (cursors.right.isDown || this.controlsHold.right) {
+                this.direction += (this.ROTATE_SPEED * tDiff);
+                if (this.direction > 360) {
+                    this.direction = this.direction - 360;
+                }
             }
         }
+
         if (cursors.up.isDown || this.controlsHold.up) {
             this.speed += (this.ACCELERATION * tDiff);
             if (this.speed > this.SPEED_LIMIT) {

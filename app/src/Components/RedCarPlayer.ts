@@ -32,40 +32,16 @@ export class RedCarPlayer extends Player {
 
     protected getPlayerSpriteByDirection(player, directionInDeg) : {name: string, flipX: boolean} {
         let halfStep = this.playerSpriteRotateSize / 2;
-        let index = 0;
 
+        // sprite list starts from direction of 225 degrees. Lets correct index to 0 or 360 degrees = index 0
+        let index = Math.round(directionInDeg / this.playerSpriteRotateSize) + 6;
+
+        // check rotate through 360 degrees
         if ( (directionInDeg > (360 - halfStep)) || directionInDeg < halfStep) {
             index = 6;
-        } else if (directionInDeg > (22.5 - halfStep) && directionInDeg < (22.5 + halfStep)) {
-            index = 7;
-        } else if (directionInDeg > (45 - halfStep) && directionInDeg < (45 + halfStep)) {
-            index = 8;
-        } else if (directionInDeg > (67.5 - halfStep) && directionInDeg < (67.5 + halfStep)) {
-            index = 9;
-        } else if (directionInDeg > (90 - halfStep) && directionInDeg < (90 + halfStep)) {
-            index = 10;
-        } else if (directionInDeg > (112.5 - halfStep) && directionInDeg < (112.5 + halfStep)) {
-            index = 11;
-        } else if (directionInDeg > (135 - halfStep) && directionInDeg < (135 + halfStep)) {
-            index = 12;
-        } else if (directionInDeg > (157.5 - halfStep) && directionInDeg < (157.5 + halfStep)) {
-            index = 13;
-        } else if (directionInDeg > (180 - halfStep) && directionInDeg < (180 + halfStep)) {
-            index = 14;
-        } else if (directionInDeg > (202.5 - halfStep) && directionInDeg < (202.5 + halfStep)) {
-            index = 15;
-        } else if (directionInDeg > (225 - halfStep) && directionInDeg < (225 + halfStep)) {
-            index = 0;
-        } else if (directionInDeg > (247.5 - halfStep) && directionInDeg < (247.5 + halfStep)) {
-            index = 1;
-        } else if (directionInDeg > (270 - halfStep) && directionInDeg < (270 + halfStep)) {
-            index = 2;
-        } else if (directionInDeg > (292.5 - halfStep) && directionInDeg < (292.5 + halfStep)) {
-            index = 3;
-        } else if (directionInDeg > (315 - halfStep) && directionInDeg < (315 + halfStep)) {
-            index = 4;
-        } else if (directionInDeg > (337.5 - halfStep) && directionInDeg < (337.5 + halfStep)) {
-            index = 5;
+        }
+        if (index > 15) {
+            index = index - 16;
         }
 
         return {name: 'red_car_' + index, flipX: false};
