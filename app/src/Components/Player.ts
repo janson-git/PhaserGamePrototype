@@ -150,15 +150,31 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         let tDiff = delta / 1000;
         let cursors = this.scene.input.keyboard.createCursorKeys();
 
-        if (cursors.left.isDown || this.controlsHold.left) {
-            this.direction -= (this.ROTATE_SPEED * tDiff);
-            if (this.direction < 0) {
-                this.direction = 360 - (this.direction);
+        if (this.speed < 0) {
+            // rear move rotate logic
+            if (cursors.left.isDown || this.controlsHold.left) {
+                this.direction += (this.ROTATE_SPEED * tDiff);
+                if (this.direction > 360) {
+                    this.direction = this.direction - 360;
+                }
+            } else if (cursors.right.isDown || this.controlsHold.right) {
+                this.direction -= (this.ROTATE_SPEED * tDiff);
+                if (this.direction < 0) {
+                    this.direction = 360 - (this.direction);
+                }
             }
-        } else if (cursors.right.isDown || this.controlsHold.right) {
-            this.direction += (this.ROTATE_SPEED * tDiff);
-            if (this.direction > 360) {
-                this.direction = this.direction - 360;
+        } else {
+            // front move rotate logic
+            if (cursors.left.isDown || this.controlsHold.left) {
+                this.direction -= (this.ROTATE_SPEED * tDiff);
+                if (this.direction < 0) {
+                    this.direction = 360 - (this.direction);
+                }
+            } else if (cursors.right.isDown || this.controlsHold.right) {
+                this.direction += (this.ROTATE_SPEED * tDiff);
+                if (this.direction > 360) {
+                    this.direction = this.direction - 360;
+                }
             }
         }
         if (cursors.up.isDown || this.controlsHold.up) {

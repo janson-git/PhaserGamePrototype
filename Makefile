@@ -53,6 +53,21 @@ up:
 	@echo "http://localhost:8088"
 ##------------
 
+up_dev:
+	cd $(APP_DIR) && docker-compose up -d
+	@echo "Install node modules, typescript, webpack..."
+	docker-compose exec app yarn install
+	@echo "Done"
+	@echo "Install http-server..."
+	docker-compose exec app yarn global add http-server
+	@echo "Done"
+# запускаем сервер в директории скомпилированных файлов
+	docker-compose exec -d app http-server /var/www/dist
+	@echo "http://localhost:8088"
+	@echo "Run build and file watch..."
+	docker-compose exec app npm run build-watch
+##------------
+
 down:
 	cd $(APP_DIR) && docker-compose down -v
 ##------------
