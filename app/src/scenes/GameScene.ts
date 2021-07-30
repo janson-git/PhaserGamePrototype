@@ -19,6 +19,7 @@ import GameObject = Phaser.GameObjects.GameObject;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import LevelCompletedPopup from "../Components/Popup/Popups/LevelCompletedPopup";
 import {RedCarPlayer} from "../Components/RedCarPlayer";
+import {NitroIndicatorOnPlayer} from "../Components/NitroIndicatorOnPlayer";
 
 export class GameScene extends SceneBase {
 
@@ -32,6 +33,7 @@ export class GameScene extends SceneBase {
 
     private player: GameObjectWithBody;
     private playerBoatTrail: GameObjectWithBody;
+    private playerNitroIndicator: GameObjectWithBody;
     private collisionLayer: StaticTilemapLayer;
     private tiledLayer: StaticTilemapLayer;
     private miniLayer: StaticTilemapLayer;
@@ -198,6 +200,7 @@ export class GameScene extends SceneBase {
 
         this.player = player;
         this.playerBoatTrail = new BoatTrail(this, player);
+        this.playerNitroIndicator = new NitroIndicatorOnPlayer(this, player);
 
         console.log('PLAYER PLACED!');
 
@@ -281,6 +284,7 @@ export class GameScene extends SceneBase {
         this.player.update(time, delta);
         this.collidePlayerWithWallCallback(time);
         this.playerBoatTrail.update(time, delta);
+        this.playerNitroIndicator.update(time, delta);
 
         // update minimap, draw objects by scaled coordinates
         let miniPlayerX = this.player.body.position.x * this.MINIMAP_SCALE;
