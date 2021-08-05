@@ -1,0 +1,130 @@
+{"frames": [
+  {
+    "filename": "car_trail_0",
+    "frame": {"x":6,"y":11,"w":52,"h":42},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":52,"h":42},
+    "sourceSize": {"w":52,"h":42},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_1", 
+    "frame": {"x":66,"y":10,"w":60,"h":42},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":60,"h":42},
+    "sourceSize": {"w":60,"h":42},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_2", 
+    "frame": {"x":133,"y":13,"w":54,"h":36},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":54,"h":36},
+    "sourceSize": {"w":54,"h":36},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_3", 
+    "frame": {"x":195,"y":13,"w":58,"h":38},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":58,"h":38},
+    "sourceSize": {"w":58,"h":38},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_4", 
+    "frame": {"x":261,"y":14,"w":54,"h":38},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":54,"h":38},
+    "sourceSize": {"w":54,"h":38},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_5", 
+    "frame": {"x":330,"y":13,"w":44,"h":40},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":44,"h":40},
+    "sourceSize": {"w":44,"h":40},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_6", 
+    "frame": {"x":402,"y":13,"w":28,"h":40},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":28,"h":40},
+    "sourceSize": {"w":28,"h":40},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_7", 
+    "frame": {"x":459,"y":12,"w":42,"h":42},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":42,"h":42},
+    "sourceSize": {"w":42,"h":42},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_8", 
+    "frame": {"x":517,"y":13,"w":54,"h":40},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":54,"h":40},
+    "sourceSize": {"w":54,"h":40},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "car_trail_9", 
+    "frame": {"x":579,"y":13,"w":58,"h":38},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":58,"h":38},
+    "sourceSize": {"w":58,"h":38},
+    "pivot": {"x":0.5,"y":0.5}
+  },
+    {
+      "filename": "car_trail_10", 
+      "frame": {"x":645,"y":14,"w":54,"h":34},
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":54,"h":34},
+      "sourceSize": {"w":54,"h":34},
+      "pivot": {"x":0.5,"y":0.5}
+    },
+    {
+      "filename": "car_trail_11", 
+      "frame": {"x":707,"y":11,"w":58,"h":40},
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":58,"h":40},
+      "sourceSize": {"w":58,"h":40},
+      "pivot": {"x":0.5,"y":0.5}
+    },
+    {
+      "filename": "car_trail_12", 
+      "frame": {"x":773,"y":11,"w":54,"h":42},
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":54,"h":42},
+      "sourceSize": {"w":54,"h":42},
+      "pivot": {"x":0.5,"y":0.5}
+    },
+    {
+      "filename": "car_trail_13", 
+      "frame": {"x":842,"y":10,"w":44,"h":44},
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":44,"h":44},
+      "sourceSize": {"w":44,"h":44},
+      "pivot": {"x":0.5,"y":0.5}
+    },
+    {
+      "filename": "car_trail_14", 
+      "frame": {"x":914,"y":11,"w":28,"h":42},
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":28,"h":42},
+      "sourceSize": {"w":28,"h":42},
+      "pivot": {"x":0.5,"y":0.5}
+    },
+    {
+      "filename": "car_trail_15", 
+      "frame": {"x":971,"y":12,"w":42,"h":42},
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":42,"h":42},
+      "sourceSize": {"w":42,"h":42},
+      "pivot": {"x":0.5,"y":0.5}
+    }
+]}

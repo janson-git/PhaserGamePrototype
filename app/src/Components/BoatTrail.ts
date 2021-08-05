@@ -11,13 +11,10 @@ type BoatTrailConfig = {
 
 export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
 
-    private player;
+    protected player;
 
-    constructor(scene: Phaser.Scene, player: Player) {
-        let x = player.x;
-        let y = player.y;
-        super(scene, x, y, 'boat_trail');
-
+    constructor(scene: Phaser.Scene, player: Player, textureName: string = 'boat_trail') {
+        super(scene, player.x, player.y, textureName);
         this.player = player;
 
         // Создадим анимации водного следа
@@ -29,7 +26,7 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
         // this.scene.physics.add.existing(this);
     }
 
-    private getTailConfig(): BoatTrailConfig {
+    protected getTailConfig(): BoatTrailConfig {
         let halfStep = this.player.playerSpriteRotateSize / 2;
         let directionInDeg = this.player.direction;
         let index = 0;
@@ -227,32 +224,14 @@ export class BoatTrail extends Phaser.Physics.Arcade.Sprite {
         this.x = config.x;
         this.y = config.y;
 
-        // this.setFrame('boat_trail_5');
-        // this.setBodySize(frame.width, frame.height);
-
         this.flipX = config.flipX || false;
         this.rotation = config.rotation;
         this.setDepth(this.player.depth + 1);
 
         this.anims.play(config.name, true);
-
-        //
-        // // взять нужный спрайт, подставить в отображение
-        // let config = this.getPlayerSpriteByDirection(this, this.direction);
-        // // обновляем отображаемый фрейм спрайта
-        // let frame = this.setFrame(config.name);
-        // this.setBodySize(frame.width, frame.height);
-        //
-        // this.flipX = config.flipX || false;
     }
 
-    // private updateVelocities() {
-    //     let directionInRad = this.direction * Math.PI / 180;
-    //     this.setVelocityX(this.speed * Math.sin(directionInRad));
-    //     this.setVelocityY(-1 * this.speed * Math.cos(directionInRad));
-    // }
-
-    private createTrailAnimations(): void {
+    protected createTrailAnimations(): void {
         let frameRate = 6;
         this.scene.anims.create({key: 'trail_0',
             frames: [

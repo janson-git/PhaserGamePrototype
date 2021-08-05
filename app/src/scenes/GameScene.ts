@@ -20,6 +20,7 @@ import Sprite = Phaser.Physics.Arcade.Sprite;
 import LevelCompletedPopup from "../Components/Popup/Popups/LevelCompletedPopup";
 import {RedCarPlayer} from "../Components/RedCarPlayer";
 import {NitroIndicatorOnPlayer} from "../Components/NitroIndicatorOnPlayer";
+import {CarTrail} from "../Components/CarTrail";
 
 export class GameScene extends SceneBase {
 
@@ -58,7 +59,7 @@ export class GameScene extends SceneBase {
     }
 
     public init(props) {
-        const {level = 0} = props;
+        const {level = 1} = props;
         this.level = level;
     }
 
@@ -79,6 +80,12 @@ export class GameScene extends SceneBase {
             'red_car',
             'assets/atlas/carsSpriteListTransparent.png',
             'assets/atlas/carsSpriteListConfig.json'
+        );
+
+        this.load.atlas(
+            'car_trail',
+            'assets/atlas/carsTrailSpriteListTransparent.png',
+            'assets/atlas/carsTrailSpriteListConfig.json'
         );
 
         this.load.spritesheet(
@@ -199,7 +206,7 @@ export class GameScene extends SceneBase {
         } while (playerPlaced !== true);
 
         this.player = player;
-        this.playerBoatTrail = new BoatTrail(this, player);
+        this.playerBoatTrail = this.createPlayerTrail(player);
         this.playerNitroIndicator = new NitroIndicatorOnPlayer(this, player);
 
         console.log('PLAYER PLACED!');
@@ -608,5 +615,17 @@ export class GameScene extends SceneBase {
         }
 
         return player;
+    }
+
+    private createPlayerTrail(player: Player): BoatTrail
+    {
+        let trail;
+        if (this.level % 2 === 0) {
+            trail = new BoatTrail(this, player);
+        } else {
+            trail = new CarTrail(this, player);
+        }
+
+        return trail;
     }
 }
