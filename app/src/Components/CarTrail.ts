@@ -59,42 +59,44 @@ export class CarTrail extends BoatTrail {
             xDiff = -18;
             yDiff = 5;
         } else if (index === 10) {
+            // RIGHT
             xDiff = -20;
             yDiff = 0;
         } else if (index === 11) {
-            xDiff = -16;
-            yDiff = 0;
+            xDiff = -18;
+            yDiff = -4;
         } else if (index === 12) {
-            xDiff = -12;
-            yDiff = -6;
-        } else if (index === 13) {
-            xDiff = -10;
+            xDiff = -14;
             yDiff = -8;
+        } else if (index === 13) {
+            xDiff = -8;
+            yDiff = -12;
         } else if (index === 14) {
             // DOWN
             xDiff = 0;
             yDiff = -19;
         } else if (index === 15) {
-            xDiff = -4;
+            xDiff = 8;
             yDiff = -12;
         } else if (index === 0) {
-            xDiff = -1;
-            yDiff = -15;
-        } else if (index === 1) {
-            xDiff = 5;
-            yDiff = -11;
-        } else if (index === 2) {
-            xDiff = 11;
+            xDiff = 14;
             yDiff = -8;
+        } else if (index === 1) {
+            xDiff = 18;
+            yDiff = -4;
+        } else if (index === 2) {
+            // LEFT
+            xDiff = 20;
+            yDiff = 0;
         } else if (index === 3) {
-            xDiff = 12;
-            yDiff = -6;
+            xDiff = 18;
+            yDiff = 5;
         } else if (index === 4) {
-            xDiff = 15;
-            yDiff = -2;
+            xDiff = 14;
+            yDiff = 9;
         } else if (index === 5) {
-            xDiff = 3;
-            yDiff = 12;
+            xDiff = 6;
+            yDiff = 11;
         }
 
         return {
@@ -134,7 +136,6 @@ export class CarTrail extends BoatTrail {
         this.scene.anims.create({key: 'car_trail_0',
             frames: [
                 {key: 'car_trail', frame: 'car_trail_0'},
-                {key: 'car_trail', frame: 'car_trail_1'},
             ],
             frameRate: frameRate
         });
