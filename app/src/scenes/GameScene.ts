@@ -20,6 +20,7 @@ import Sprite = Phaser.Physics.Arcade.Sprite;
 import LevelCompletedPopup from "../Components/Popup/Popups/LevelCompletedPopup";
 import {RedCarPlayer} from "../Components/RedCarPlayer";
 import {NitroIndicatorOnPlayer} from "../Components/NitroIndicatorOnPlayer";
+import GameOverPopup from "../Components/Popup/Popups/GameOverPopup";
 
 export class GameScene extends SceneBase {
 
@@ -29,6 +30,7 @@ export class GameScene extends SceneBase {
     private MINIMAP_SCALE: number = 1/24;
 
     private STARS_ON_LEVEL = 10;
+    private BOMBS_ON_LEVEL = 20;
     private NITROS_ON_LEVEL = 3;
 
     private player: GameObjectWithBody;
@@ -40,9 +42,11 @@ export class GameScene extends SceneBase {
     private miniMapLocator: Phaser.GameObjects.Graphics;
     private stars: Phaser.Physics.Arcade.Group;
     private nitros: Phaser.Physics.Arcade.Group;
+    private bombs: Phaser.Physics.Arcade.Group;
     private collectedStars;
     private scoreText;
     private nitroText;
+    private hpBar;
     private levelText;
     private fullscreenButton;
     private level: number;
@@ -89,6 +93,7 @@ export class GameScene extends SceneBase {
 
         this.load.image('star', 'assets/star24.png');
         this.load.image('nitro', 'assets/nitro24.png');
+        this.load.image('bomb', 'assets/bomb24.png');
         this.load.image('settingsIcon', 'assets/settingsIcon-24.png');
         this.load.image('turnLeftArrow', 'assets/turnLeftArrow.png');
         this.load.image('turnRightArrow', 'assets/turnRightArrow.png');
@@ -183,6 +188,25 @@ export class GameScene extends SceneBase {
 
         console.log('NITROS PLACED!');
 
+        //////////////// PLACE BOMBS
+        this.bombs = this.physics.add.group();
+        for (let i = 0; i < this.BOMBS_ON_LEVEL; i++) {
+            let tileX, tileY, placed = false;
+            do {
+                tileX = MathUtils.getRandomIntegerBetween(0, map.width - 1);
+                tileY = MathUtils.getRandomIntegerBetween(0, map.height - 1);
+
+                if (this.isFreeToPlaceWithNeighbors(tileX, tileY, map)) {
+                    placed = true;
+                    let coords = map.tileToWorldXY(tileX, tileY);
+                    let n = this.bombs.create(coords.x, coords.y, 'bomb');
+                    (n as Sprite).setTint(0xFF9933);
+                }
+            } while (placed !== true);
+        }
+
+        console.log('BOMBS PLACED!');
+
         //////////////// PLACE A PLAYER
         let player, playerTileX, playerTileY, playerPlaced;
         player = this.createPlayer();
@@ -210,6 +234,7 @@ export class GameScene extends SceneBase {
         this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
         // Checks to player overlaps nitro and set callback to get it
         this.physics.add.overlap(this.player, this.nitros, this.collectNitro, null, this);
+        this.physics.add.overlap(this.player, this.bombs, this.blowUpOnBomb, null, this);
 
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.setRoundPixels(true);
@@ -226,6 +251,9 @@ export class GameScene extends SceneBase {
 
         this.levelText = this.add.text(this.gameWidth - 70, this.gameHeight - 20, `Level: ${this.level}`, textStyle)
             .setScrollFactor(0).setFontSize(12);
+
+        this.hpBar = this.add.text(16, 36, ''.padEnd(player.getHP(), 'X'), textStyle)
+            .setScrollFactor(0).setFontSize(20);
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
@@ -260,6 +288,19 @@ export class GameScene extends SceneBase {
         });
         this.game.events.on('LEVEL_COMPLETED', () => {
             PopupManager.createWindow(this, new LevelCompletedPopup());
+        });
+        this.game.events.on('ZERO_HP', () => {
+            PopupManager.createWindow(this, new GameOverPopup());
+        });
+        this.game.events.on('GAME_OVER', () => {
+            this.cameras.main.fadeOut(1500);
+            this.time.addEvent({
+                delay: 1000,
+                callback: () => {
+                    this.scene.restart({level: 0});
+                    this.cameras.main.fadeIn(500);
+                }
+            });
         });
         this.game.events.on('GO_TO_NEXT_LEVEL', () => {
             this.cameras.main.fadeOut(500);
@@ -296,6 +337,7 @@ export class GameScene extends SceneBase {
 
         let player = this.player as Player;
         this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
+        this.hpBar.setText(''.padEnd(player.getHP(), 'X'))
 
         // if fullscreen toggleoff by pressing Esc-button, redraw fullscreen icon
         if (!this.scale.isFullscreen) {
@@ -323,6 +365,18 @@ export class GameScene extends SceneBase {
         (this.player as Player).addNitro();
     }
 
+    public blowUpOnBomb (player, bomb: GameObject) {
+        bomb.destroy();
+
+        (this.player as Player).hpDown(2);
+
+        if ((this.player as Player).getHP() === 0) {
+            console.log('ZERO HP!!!');
+
+            this.game.events.emit('ZERO_HP');
+        }
+    }
+
     // Limits for player collisions handle
     protected static minimalSpeedOnCollide: number = 25;
     protected static playerNegativeEffectInterval: number = 0.2; // in seconds
@@ -340,6 +394,7 @@ export class GameScene extends SceneBase {
                 let playerInstance = player as Player;
                 let speed = playerInstance.getSpeed();
                 playerInstance.setSpeed(speed > GameScene.minimalSpeedOnCollide ? speed / 2 : 0);
+                (this.player as Player).hpDown();
 
                 GameScene.lastCollisionEffectTime = time;
             }

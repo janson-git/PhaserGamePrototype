@@ -4,6 +4,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected playerSpriteRotateSize = 11.25; // 11.25 градусов на спрайт
     protected direction: number = 0;
     protected speed: number = 0;
+    protected hitpoints: number = 10;
 
     protected controlsHold = {
         left: false,
@@ -216,5 +217,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     public addNitro(count: number = 1): void
     {
         this.nitroCount += count;
+    }
+
+    public hpDown(count: number = 1): void
+    {
+        this.hitpoints -= count;
+    }
+
+    public getHP(): number
+    {
+        return this.hitpoints;
     }
 }
