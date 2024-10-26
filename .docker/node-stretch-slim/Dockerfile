@@ -1,4 +1,4 @@
-FROM node:stretch-slim
+FROM node:slim
 
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y wget && \
