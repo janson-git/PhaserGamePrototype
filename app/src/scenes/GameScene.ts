@@ -21,6 +21,7 @@ import LevelCompletedPopup from "../Components/Popup/Popups/LevelCompletedPopup"
 import {RedCarPlayer} from "../Components/RedCarPlayer";
 import {NitroIndicatorOnPlayer} from "../Components/NitroIndicatorOnPlayer";
 import GameOverPopup from "../Components/Popup/Popups/GameOverPopup";
+import {Explosion} from "../Components/Explosion";
 
 export class GameScene extends SceneBase {
 
@@ -35,6 +36,7 @@ export class GameScene extends SceneBase {
 
     private player: GameObjectWithBody;
     private playerBoatTrail: GameObjectWithBody;
+    private playerExplosion: GameObjectWithBody;
     private playerNitroIndicator: GameObjectWithBody;
     private collisionLayer: StaticTilemapLayer;
     private tiledLayer: StaticTilemapLayer;
@@ -50,6 +52,12 @@ export class GameScene extends SceneBase {
     private levelText;
     private fullscreenButton;
     private level: number;
+
+    public readonly STATE_PLAY = 'PLAY';
+    public readonly STATE_GAME_OVER = 'GAME_OVER';
+    public readonly STATE_PAUSED = 'PAUSED';
+
+    private currentState = 'PLAY';
 
     private popupCount: number = 0;
 
@@ -83,6 +91,11 @@ export class GameScene extends SceneBase {
             'red_car',
             'assets/atlas/carsSpriteListTransparent.png',
             'assets/atlas/carsSpriteListConfig.json'
+        );
+        this.load.atlas(
+            'explosion',
+            'assets/atlas/explosion.png',
+            'assets/atlas/explosionSpriteListConfig.json'
         );
 
         this.load.spritesheet(
@@ -224,6 +237,7 @@ export class GameScene extends SceneBase {
 
         this.player = player;
         this.playerBoatTrail = new BoatTrail(this, player);
+        this.playerExplosion = new Explosion(this, player);
         this.playerNitroIndicator = new NitroIndicatorOnPlayer(this, player);
 
         console.log('PLAYER PLACED!');
@@ -290,7 +304,14 @@ export class GameScene extends SceneBase {
             PopupManager.createWindow(this, new LevelCompletedPopup());
         });
         this.game.events.on('ZERO_HP', () => {
-            PopupManager.createWindow(this, new GameOverPopup());
+            this.currentState = this.STATE_GAME_OVER;
+
+            this.time.addEvent({
+                delay: 2000,
+                callback: () => {
+                    PopupManager.createWindow(this, new GameOverPopup());
+                }
+            });
         });
         this.game.events.on('GAME_OVER', () => {
             this.cameras.main.fadeOut(1500);
@@ -319,12 +340,15 @@ export class GameScene extends SceneBase {
             // Create touch controls for touch devices
             this.createTouchControlZones();
         }
+
+        this.currentState = this.STATE_PLAY;
     }
 
     public update(time, delta) {
         this.player.update(time, delta);
         this.collidePlayerWithWallCallback(time);
         this.playerBoatTrail.update(time, delta);
+        this.playerExplosion.update(time, delta);
         this.playerNitroIndicator.update(time, delta);
 
         // update minimap, draw objects by scaled coordinates
@@ -338,6 +362,15 @@ export class GameScene extends SceneBase {
         let player = this.player as Player;
         this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
         this.hpBar.setText(''.padEnd(player.getHP(), 'X'))
+
+
+        if ((this.player as Player).getHP() < 1) {
+            console.log('ZERO HP!!!');
+
+            if (this.currentState !== this.STATE_GAME_OVER) {
+                this.game.events.emit('ZERO_HP');
+            }
+        }
 
         // if fullscreen toggleoff by pressing Esc-button, redraw fullscreen icon
         if (!this.scale.isFullscreen) {
@@ -369,12 +402,6 @@ export class GameScene extends SceneBase {
         bomb.destroy();
 
         (this.player as Player).hpDown(2);
-
-        if ((this.player as Player).getHP() === 0) {
-            console.log('ZERO HP!!!');
-
-            this.game.events.emit('ZERO_HP');
-        }
     }
 
     // Limits for player collisions handle
@@ -663,5 +690,9 @@ export class GameScene extends SceneBase {
         }
 
         return player;
+    }
+
+    public getCurrentState(): string {
+        return this.currentState;
     }
 }

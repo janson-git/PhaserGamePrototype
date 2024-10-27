@@ -4,7 +4,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     protected playerSpriteRotateSize = 11.25; // 11.25 градусов на спрайт
     protected direction: number = 0;
     protected speed: number = 0;
-    protected hitpoints: number = 10;
+    protected hitpoints: number = 2;
 
     protected controlsHold = {
         left: false,
@@ -88,7 +88,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.controlsHold.nitro = false;
     }
 
+    private alreadyZero = false;
+
     public update(time, delta) {
+        if (this.hitpoints < 1) {
+            this.setVisible(false);
+            this.speed = 0;
+            this.isNitroActive = false;
+            if (!this.alreadyZero) {
+                this.updateVelocities()
+                this.alreadyZero = true;
+            }
+            return;
+        }
         let tDiff = delta / 1000;
         let cursors = this.scene.input.keyboard.createCursorKeys();
 
