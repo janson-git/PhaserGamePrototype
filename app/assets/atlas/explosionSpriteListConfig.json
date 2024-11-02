@@ -54,5 +54,13 @@
     "spriteSourceSize": {"x":0,"y":0,"w":56,"h":56},
     "sourceSize": {"w":56,"h":56},
     "pivot": {"x":0.5,"y":0.5}
+  },
+  {
+    "filename": "explosion_7",
+    "frame": {"x":470,"y":22,"w":56,"h":56},
+    "trimmed": false,
+    "spriteSourceSize": {"x":0,"y":0,"w":56,"h":56},
+    "sourceSize": {"w":56,"h":56},
+    "pivot": {"x":0.5,"y":0.5}
   }
 ]}

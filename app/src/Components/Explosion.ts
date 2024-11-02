@@ -31,7 +31,7 @@ export class Explosion extends Phaser.Physics.Arcade.Sprite {
     }
 
     public update(time, delta) {
-        if (this.player.getHP() > 0) {
+        if (this.player.getHp() > 0) {
             this.setVisible(false);
             return;
         }
@@ -49,6 +49,7 @@ export class Explosion extends Phaser.Physics.Arcade.Sprite {
 
         let scene = (this.scene as GameScene)
         if (scene.getCurrentState() === scene.STATE_PLAY) {
+            this.scene.sound.play('explosion');
             this.anims.play('explode_boat', true);
         }
     }
@@ -65,6 +66,7 @@ export class Explosion extends Phaser.Physics.Arcade.Sprite {
                 {key: 'explosion', frame: 'explosion_4'},
                 {key: 'explosion', frame: 'explosion_5'},
                 {key: 'explosion', frame: 'explosion_6'},
+                {key: 'explosion', frame: 'explosion_7'},
             ],
             frameRate: frameRate,
             hideOnComplete: true,

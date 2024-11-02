@@ -48,10 +48,12 @@ export class GameScene extends SceneBase {
     private collectedStars;
     private scoreText;
     private nitroText;
+    private hpBarBg;
     private hpBar;
     private levelText;
     private fullscreenButton;
     private level: number;
+    private levelMusic;
 
     public readonly STATE_PLAY = 'PLAY';
     public readonly STATE_GAME_OVER = 'GAME_OVER';
@@ -115,6 +117,9 @@ export class GameScene extends SceneBase {
         this.load.image('stoneTilesExtruded', 'assets/tilemaps/StoneMazeTilesExtruded.png');
 
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
+
+        this.load.audio('explosion', 'assets/sounds/explosion.wav');
+        this.load.audio('level_music', 'assets/sounds/level_music_looped.wav')
     }
 
     public create() {
@@ -266,8 +271,10 @@ export class GameScene extends SceneBase {
         this.levelText = this.add.text(this.gameWidth - 70, this.gameHeight - 20, `Level: ${this.level}`, textStyle)
             .setScrollFactor(0).setFontSize(12);
 
-        this.hpBar = this.add.text(16, 36, ''.padEnd(player.getHP(), 'X'), textStyle)
-            .setScrollFactor(0).setFontSize(20);
+        this.hpBarBg = this.add.rectangle(20, 50, 200, 20, 0xff0000, 0.5)
+            .setOrigin(0,0).setScrollFactor(0).setStrokeStyle(1, 0x000000);
+        this.hpBar = this.add.rectangle(20, 50, 200, 20, 0x00ff00)
+            .setOrigin(0, 0).setScrollFactor(0).setStrokeStyle(1, 0x000000, 1);
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
@@ -342,6 +349,12 @@ export class GameScene extends SceneBase {
         }
 
         this.currentState = this.STATE_PLAY;
+
+        this.levelMusic = this.sound.add('level_music', {
+            loop: true,
+            volume: 0.6
+        });
+        this.levelMusic.play();
     }
 
     public update(time, delta) {
@@ -361,13 +374,14 @@ export class GameScene extends SceneBase {
 
         let player = this.player as Player;
         this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
-        this.hpBar.setText(''.padEnd(player.getHP(), 'X'))
 
+        this.hpBar.scaleX = player.getHpPercentage() / 100;
 
-        if ((this.player as Player).getHP() < 1) {
+        if ((this.player as Player).getHp() < 1) {
             console.log('ZERO HP!!!');
 
             if (this.currentState !== this.STATE_GAME_OVER) {
+                this.sound.stopByKey('level_music');
                 this.game.events.emit('ZERO_HP');
             }
         }
