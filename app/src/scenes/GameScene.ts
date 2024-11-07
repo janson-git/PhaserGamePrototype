@@ -3,7 +3,7 @@ import {Player} from "../Components/Player";
 import MathUtils from "../lib/MathUtils";
 import BSPMazeGenerator from "../lib/BSPMazeGenerator";
 import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
-import StaticTilemapLayer = Phaser.Tilemaps.StaticTilemapLayer;
+import StaticTilemapLayer = Phaser.Tilemaps.TilemapLayer;
 import BlendModes = Phaser.BlendModes;
 import WaterMazeTilesProcessor from "../lib/Maze/WaterMazeTilesProcessor";
 import StoneMazeTilesProcessor from "../lib/Maze/StoneMazeTilesProcessor";
@@ -37,7 +37,7 @@ export class GameScene extends SceneBase {
     private player: GameObjectWithBody;
     private playerBoatTrail: GameObjectWithBody;
     private playerExplosion: GameObjectWithBody;
-    private playerNitroIndicator: GameObjectWithBody;
+    private playerNitroIndicator;
     private collisionLayer: StaticTilemapLayer;
     private tiledLayer: StaticTilemapLayer;
     private miniLayer: StaticTilemapLayer;
@@ -45,6 +45,8 @@ export class GameScene extends SceneBase {
     private stars: Phaser.Physics.Arcade.Group;
     private nitros: Phaser.Physics.Arcade.Group;
     private bombs: Phaser.Physics.Arcade.Group;
+    private bombsExploded: Phaser.Physics.Arcade.Group;
+    private bombExplode: Phaser.GameObjects.Particles.ParticleEmitter;
     private collectedStars;
     private scoreText;
     private nitroText;
@@ -109,16 +111,19 @@ export class GameScene extends SceneBase {
         this.load.image('star', 'assets/star24.png');
         this.load.image('nitro', 'assets/nitro24.png');
         this.load.image('bomb', 'assets/bomb24.png');
+        this.load.image('bombExploded', 'assets/bomb24_exploded.png');
         this.load.image('settingsIcon', 'assets/settingsIcon-24.png');
         this.load.image('turnLeftArrow', 'assets/turnLeftArrow.png');
         this.load.image('turnRightArrow', 'assets/turnRightArrow.png');
 
         this.load.image('tilesExtruded', 'assets/tilemaps/WaterMazeTilesExtruded.png');
         this.load.image('stoneTilesExtruded', 'assets/tilemaps/StoneMazeTilesExtruded.png');
+        this.load.image('blackDot', 'assets/black-dot.png');
 
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/WaterMazeMap.json');
 
         this.load.audio('explosion', 'assets/sounds/explosion.wav');
+        this.load.audio('bomb_explosion', 'assets/sounds/bomb_small_explode.wav');
         this.load.audio('level_music', 'assets/sounds/level_music_looped.wav')
     }
 
@@ -160,8 +165,8 @@ export class GameScene extends SceneBase {
 
         tiles = this.updateMapTiles(map);
 
-        this.collisionLayer = map.createStaticLayer(0, tiles, 0, 0);
-        this.tiledLayer = map.createStaticLayer(1, tiles, 0, 0);
+        this.collisionLayer = map.createLayer(0, tiles, 0, 0);
+        this.tiledLayer = map.createLayer(1, tiles, 0, 0);
 
         // Set map to use '1' value of collision layer to calculate collisions
         map.setCollision([1], true, false, this.collisionLayer);
@@ -208,6 +213,7 @@ export class GameScene extends SceneBase {
 
         //////////////// PLACE BOMBS
         this.bombs = this.physics.add.group();
+        this.bombsExploded = this.physics.add.group();
         for (let i = 0; i < this.BOMBS_ON_LEVEL; i++) {
             let tileX, tileY, placed = false;
             do {
@@ -237,6 +243,7 @@ export class GameScene extends SceneBase {
                 playerPlaced = true;
                 let coords = map.tileToWorldXY(playerTileX, playerTileY);
                 player.setPosition(coords.x, coords.y);
+                player.setDepth(5);
             }
         } while (playerPlaced !== true);
 
@@ -278,6 +285,9 @@ export class GameScene extends SceneBase {
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
+
+        // particles for bomb exploding
+        this.initParticleEmitter();
 
         let gameScale = this.sys.game.scale;
 
@@ -406,14 +416,27 @@ export class GameScene extends SceneBase {
         }
     }
 
-    public collectNitro (player, nitro: GameObject) {
+    public collectNitro (player, nitro) {
         nitro.destroy();
 
         (this.player as Player).addNitro();
     }
 
-    public blowUpOnBomb (player, bomb: GameObject) {
+    public blowUpOnBomb (player, bomb) {
+        const x = bomb.x;
+        const y = bomb.y;
+        this.bombExplode.setX(x);
+        this.bombExplode.setY(y);
+
         bomb.destroy();
+
+        this.bombExplode.explode(40);
+        if (this.getCurrentState() === this.STATE_PLAY) {
+            this.sound.play('bomb_explosion');
+        }
+
+        const b = this.bombsExploded.create(x, y, 'bombExploded');
+        b.setDepth(1).setScale(0.7).setAlpha(0.7);
 
         (this.player as Player).hpDown(2);
     }
@@ -449,7 +472,7 @@ export class GameScene extends SceneBase {
         miniMapBg.setScrollFactor(0);
 
         // SCALED tilemap on background, Scale = (1 / tileWidth)
-        this.miniLayer = miniMap.createStaticLayer(0, tiles, 10, this.gameHeight - 130);
+        this.miniLayer = miniMap.createLayer(0, tiles, 10, this.gameHeight - 130);
         this.miniLayer.setScale(this.MINIMAP_SCALE);
         this.miniLayer.setScrollFactor(0);
         this.miniLayer.setBlendMode(BlendModes.SCREEN);
@@ -708,5 +731,23 @@ export class GameScene extends SceneBase {
 
     public getCurrentState(): string {
         return this.currentState;
+    }
+
+    private initParticleEmitter()
+    {
+        this.bombExplode = this.add.particles(0, 0, 'blackDot');
+        this.bombExplode.setDepth(1);
+        this.bombExplode.setConfig({
+            speed: {min: 20, max: 150},
+            scale: {start: 0.6, end: 0},
+            quantity: 1,
+            lifespan: 600,
+            emitting: false,
+        });
+
+        // optional for debugging
+        const player = this.player as Player;
+        this.bombExplode.setX(player.x);
+        this.bombExplode.setY(player.y);
     }
 }
