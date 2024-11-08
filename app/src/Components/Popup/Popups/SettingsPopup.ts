@@ -10,16 +10,16 @@ export default class SettingsPopup extends PopupWindowType {
         // Отрисовать содержимое попапа в его сцене
         let headerStyle = {fontSize: '18px', fill: '#000', fontFamily: 'Arial, sans-serif'};
         let textStyle = {fontSize: '12px', fill: '#000', fontFamily: 'Arial, sans-serif'};
-        scene.add.text(20, 35, 'Управление')
+        scene.add.text(20, 35, 'CONTROLS:')
             .setStyle(headerStyle);
 
-        scene.add.text(20, 60, 'Вверх - ускорение').setStyle(textStyle);
-        scene.add.text(20, 77, 'Вниз - движение назад').setStyle(textStyle);
-        scene.add.text(20, 94, 'Право/Лево - поворот').setStyle(textStyle);
-        scene.add.text(20, 110, 'Пробел - торможение').setStyle(textStyle);
-        scene.add.text(20, 127, 'Shift - НИТРО!').setStyle(textStyle);
+        scene.add.text(20, 60, 'ARROW UP - Forward').setStyle(textStyle);
+        scene.add.text(20, 77, 'ARROW DOWN - Backward').setStyle(textStyle);
+        scene.add.text(20, 94, 'ARROW LEFT/RIGHT - Rotate').setStyle(textStyle);
+        scene.add.text(20, 110, 'SPACE - Break').setStyle(textStyle);
+        scene.add.text(20, 127, 'Shift - Use NITRO!').setStyle(textStyle);
 
-        scene.add.text(20, 280, 'Выйти в главное меню')
+        scene.add.text(20, 280, 'Go to Main Menu')
             .setColor('red')
             .setInteractive({useHandCursor: true})
             .on('pointerdown', () => {

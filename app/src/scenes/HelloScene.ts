@@ -23,21 +23,21 @@ export class HelloScene extends SceneBase {
         let centerX = this.gameWidth / 2;
         let centerY = this.gameHeight / 2;
 
-        let header = this.add.text(centerX, 20, 'Выбери что будешь делать');
+        let header = this.add.text(centerX, 20, 'Select a mode');
         header.setFontStyle('bold')
             .setFontSize(16)
             .setX(centerX - Math.round(header.width / 2));
 
         // КНОПОЧКИ
         // 1. Игра: найди и собери
-        let goSearchBoxGame = new GameMenuButton(this, 150, 100, 100, 100, 'Искать клады');
+        let goSearchBoxGame = new GameMenuButton(this, 150, 100, 100, 100, "Search \ntreasures");
         goSearchBoxGame.on('pointerdown', () => {
             this.scene.start('Game');
         });
         this.add.existing(goSearchBoxGame);
 
         // 2. Генератор лабиринтов
-        let goMazeGenerator = new GameMenuButton(this, 150, 300, 100, 100, "Генератор \nлабиринтов");
+        let goMazeGenerator = new GameMenuButton(this, 150, 300, 100, 100, "Maze \ngenerator");
         goMazeGenerator.on('pointerdown', () => {
             this.scene.start('Generator');
         });

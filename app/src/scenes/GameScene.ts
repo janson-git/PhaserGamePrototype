@@ -15,7 +15,6 @@ import PopupManager from "../Components/Popup/PopupManager";
 import SettingsPopup from "../Components/Popup/Popups/SettingsPopup";
 import {SceneBase} from "./SceneBase";
 import parseToMultiLayerTilemap from "../lib/Tilemap/ParseToMultiLayerTilemap";
-import GameObject = Phaser.GameObjects.GameObject;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import LevelCompletedPopup from "../Components/Popup/Popups/LevelCompletedPopup";
 import {RedCarPlayer} from "../Components/RedCarPlayer";
@@ -31,7 +30,7 @@ export class GameScene extends SceneBase {
     private MINIMAP_SCALE: number = 1/24;
 
     private STARS_ON_LEVEL = 10;
-    private BOMBS_ON_LEVEL = 20;
+    private BOMBS_ON_LEVEL = 30;
     private NITROS_ON_LEVEL = 3;
 
     private player: GameObjectWithBody;
@@ -266,22 +265,8 @@ export class GameScene extends SceneBase {
         this.cameras.main.setRoundPixels(true);
         this.cameras.main.startFollow(this.player, true);
 
-        ////////////////  SCORE
-        this.collectedStars = 0;
-        let textStyle = {fontSize: '28px', fill: '#000', fontFamily: 'Arial, sans-serif'};
-        this.scoreText = this.add.text(16, 16, `Собрано звёзд: ${this.collectedStars} из ${this.STARS_ON_LEVEL}`, textStyle)
-            .setScrollFactor(0);
-
-        this.nitroText = this.add.text(this.gameWidth - 200, 16, `НИТРО: ${player.getNitroCount()}`, textStyle)
-            .setScrollFactor(0).setFontSize(20);
-
-        this.levelText = this.add.text(this.gameWidth - 70, this.gameHeight - 20, `Level: ${this.level}`, textStyle)
-            .setScrollFactor(0).setFontSize(12);
-
-        this.hpBarBg = this.add.rectangle(20, 50, 200, 20, 0xff0000, 0.5)
-            .setOrigin(0,0).setScrollFactor(0).setStrokeStyle(1, 0x000000);
-        this.hpBar = this.add.rectangle(20, 50, 200, 20, 0x00ff00)
-            .setOrigin(0, 0).setScrollFactor(0).setStrokeStyle(1, 0x000000, 1);
+        ////////////////  ADD HUD INTERFACE ON SCREEN
+        this.createHUD();
 
         // Create minimap
         this.createMiniMap(miniMap, tiles);
@@ -374,22 +359,10 @@ export class GameScene extends SceneBase {
         this.playerExplosion.update(time, delta);
         this.playerNitroIndicator.update(time, delta);
 
-        // update minimap, draw objects by scaled coordinates
-        let miniPlayerX = this.player.body.position.x * this.MINIMAP_SCALE;
-        let miniPlayerY = this.player.body.position.y * this.MINIMAP_SCALE;
-
-        this.miniMapLocator.clear();
-        this.miniMapLocator.fillStyle(0xFF0000);
-        this.miniMapLocator.fillRect(miniPlayerX, miniPlayerY, 2, 2);
+        this.updateHUD();
 
         let player = this.player as Player;
-        this.nitroText.setText(`НИТРО: ${player.getNitroCount()}`);
-
-        this.hpBar.scaleX = player.getHpPercentage() / 100;
-
-        if ((this.player as Player).getHp() < 1) {
-            console.log('ZERO HP!!!');
-
+        if (player.getHp() < 1) {
             if (this.currentState !== this.STATE_GAME_OVER) {
                 this.sound.stopByKey('level_music');
                 this.game.events.emit('ZERO_HP');
@@ -402,23 +375,56 @@ export class GameScene extends SceneBase {
         }
     }
 
+    private createHUD() {
+        const player = this.player as Player;
+
+        this.collectedStars = 0;
+        let textStyle = {fontSize: '28px', fill: '#000', fontFamily: 'Arial, sans-serif'};
+        this.scoreText = this.add.text(16, 16, `Stars collected: ${this.collectedStars} of ${this.STARS_ON_LEVEL}`, textStyle)
+            .setScrollFactor(0);
+
+        this.nitroText = this.add.text(this.gameWidth - 200, 16, `NITRO: ${player.getNitroCount()}`, textStyle)
+            .setScrollFactor(0).setFontSize(20);
+
+        this.levelText = this.add.text(this.gameWidth - 70, this.gameHeight - 20, `Level: ${this.level}`, textStyle)
+            .setScrollFactor(0).setFontSize(12);
+
+        this.hpBarBg = this.add.rectangle(20, 50, 200, 20, 0xff0000, 0.5)
+            .setOrigin(0,0).setScrollFactor(0).setStrokeStyle(1, 0x000000);
+        this.hpBar = this.add.rectangle(20, 50, 200, 20, 0x00ff00)
+            .setOrigin(0, 0).setScrollFactor(0).setStrokeStyle(1, 0x000000, 1);
+    }
+
+    private updateHUD() {
+        // update minimap, draw objects by scaled coordinates
+        let miniPlayerX = this.player.body.position.x * this.MINIMAP_SCALE;
+        let miniPlayerY = this.player.body.position.y * this.MINIMAP_SCALE;
+
+        this.miniMapLocator.clear();
+        this.miniMapLocator.fillStyle(0xFF0000);
+        this.miniMapLocator.fillRect(miniPlayerX, miniPlayerY, 2, 2);
+
+        const player = this.player as Player;
+
+        this.nitroText.setText(`NITRO: ${player.getNitroCount()}`);
+        this.hpBar.scaleX = player.getHpPercentage() / 100;
+
+        this.scoreText.setText(`Stars collected: ${this.collectedStars} of ${this.STARS_ON_LEVEL}`);
+    }
+
     public collectStar (player, star) {
         star.disableBody(true, true);
 
         //  Add and update the score
         this.collectedStars += 1;
-        this.scoreText.setText(`Собрано звёзд: ${this.collectedStars} из ${this.STARS_ON_LEVEL}`);
-
         if (this.stars.countActive(true) === 0) {
             console.log('ALL STARS COLLECTED!!!');
-
             this.game.events.emit('LEVEL_COMPLETED');
         }
     }
 
     public collectNitro (player, nitro) {
         nitro.destroy();
-
         (this.player as Player).addNitro();
     }
 

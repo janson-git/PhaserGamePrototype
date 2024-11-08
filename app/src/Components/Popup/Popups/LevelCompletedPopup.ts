@@ -10,10 +10,10 @@ export default class LevelCompletedPopup extends PopupWindowType {
         // Отрисовать содержимое попапа в его сцене
         let headerStyle = {fontSize: '18px', fill: '#000', fontFamily: 'Arial, sans-serif'};
         let textStyle = {fontSize: '12px', fill: '#000', fontFamily: 'Arial, sans-serif'};
-        scene.add.text(20, 35, 'Уровень пройден!')
+        scene.add.text(20, 35, 'Level Completed!')
             .setStyle(headerStyle);
 
-        scene.add.text(20, 180, 'Начать следующий уровень')
+        scene.add.text(20, 180, 'Go to next level!')
             .setColor('red')
             .setBackgroundColor('white')
             .setPadding(20, 10, 20, 10)
