@@ -3,6 +3,16 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 
+const e = new Date();
+const Y = e.getFullYear();
+let M = (e.getMonth() + 1).toString().padStart(2, '0');
+let D = e.getDate().toString().padStart(2, '0');
+let h = e.getHours().toString().padStart(2, '0');
+let m = e.getMinutes().toString().padStart(2, '0');
+let s = e.getSeconds().toString().padStart(2, '0');
+
+const versionString = '' + Y + M + D + 'T' + h + m + s;
+
 module.exports = {
     entry: {
         app: './src/App.ts',
@@ -50,6 +60,7 @@ module.exports = {
         new webpack.DefinePlugin({
             'typeof CANVAS_RENDERER': JSON.stringify(true),
             'typeof WEBGL_RENDERER': JSON.stringify(true),
+            VERSION: JSON.stringify(versionString)
         }),
     ],
 
