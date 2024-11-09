@@ -300,12 +300,15 @@ export class GameScene extends SceneBase {
         });
 
         this.game.events.on('GO_TO_MAIN_MENU', () => {
+            this.stopLevelMusic();
             this.scene.start('Hello');
         });
         this.game.events.on('LEVEL_COMPLETED', () => {
+            this.stopLevelMusic();
             PopupManager.createWindow(this, new LevelCompletedPopup());
         });
         this.game.events.on('ZERO_HP', () => {
+            this.stopLevelMusic();
             this.currentState = this.STATE_GAME_OVER;
 
             this.time.addEvent({
@@ -326,6 +329,7 @@ export class GameScene extends SceneBase {
             });
         });
         this.game.events.on('GO_TO_NEXT_LEVEL', () => {
+            this.stopLevelMusic();
             this.cameras.main.fadeOut(500);
             this.time.addEvent({
                 delay: 500,
@@ -344,12 +348,7 @@ export class GameScene extends SceneBase {
         }
 
         this.currentState = this.STATE_PLAY;
-
-        this.levelMusic = this.sound.add('level_music', {
-            loop: true,
-            volume: 0.6
-        });
-        this.levelMusic.play();
+        this.startLevelMusic();
     }
 
     public update(time, delta) {
@@ -364,7 +363,6 @@ export class GameScene extends SceneBase {
         let player = this.player as Player;
         if (player.getHp() < 1) {
             if (this.currentState !== this.STATE_GAME_OVER) {
-                this.sound.stopByKey('level_music');
                 this.game.events.emit('ZERO_HP');
             }
         }
@@ -755,5 +753,19 @@ export class GameScene extends SceneBase {
         const player = this.player as Player;
         this.bombExplode.setX(player.x);
         this.bombExplode.setY(player.y);
+    }
+
+    private startLevelMusic()
+    {
+        this.levelMusic = this.sound.add('level_music', {
+            loop: true,
+            volume: 0.6,
+        });
+        this.levelMusic.play();
+    }
+
+    private stopLevelMusic()
+    {
+        this.sound.get('level_music').stop();
     }
 }
