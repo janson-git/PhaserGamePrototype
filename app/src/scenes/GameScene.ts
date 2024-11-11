@@ -308,8 +308,8 @@ export class GameScene extends SceneBase {
             PopupManager.createWindow(this, new LevelCompletedPopup());
         });
         this.game.events.on('ZERO_HP', () => {
-            this.stopLevelMusic();
             this.currentState = this.STATE_GAME_OVER;
+            this.stopLevelMusic();
 
             this.time.addEvent({
                 delay: 2000,
@@ -319,6 +319,7 @@ export class GameScene extends SceneBase {
             });
         });
         this.game.events.on('GAME_OVER', () => {
+            this.stopLevelMusic();
             this.cameras.main.fadeOut(1500);
             this.time.addEvent({
                 delay: 1000,
@@ -415,6 +416,7 @@ export class GameScene extends SceneBase {
 
         //  Add and update the score
         this.collectedStars += 1;
+        this.game.events.emit('LEVEL_COMPLETED');
         if (this.stars.countActive(true) === 0) {
             console.log('ALL STARS COLLECTED!!!');
             this.game.events.emit('LEVEL_COMPLETED');
@@ -757,15 +759,29 @@ export class GameScene extends SceneBase {
 
     private startLevelMusic()
     {
-        this.levelMusic = this.sound.add('level_music', {
-            loop: true,
-            volume: 0.6,
-        });
-        this.levelMusic.play();
+        if (this.levelMusic && !this.levelMusic.isPlaying) {
+            this.levelMusic.play();
+        } else {
+            let sound = this.sound.get('level_music')
+            if (!this.levelMusic && (!sound || (sound && !sound.isPlaying))) {
+                this.levelMusic = this.sound.add('level_music', {
+                    loop: true,
+                    volume: 0.6,
+                });
+                this.levelMusic.play();
+            }
+        }
     }
 
     private stopLevelMusic()
     {
-        this.sound.get('level_music').stop();
+        if (this.levelMusic) {
+            this.levelMusic.stop();
+        } else {
+            let sound = this.sound.get('level_music')
+            if (sound) {
+                sound.stop();
+            }
+        }
     }
 }
