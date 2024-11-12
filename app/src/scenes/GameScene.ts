@@ -416,7 +416,6 @@ export class GameScene extends SceneBase {
 
         //  Add and update the score
         this.collectedStars += 1;
-        this.game.events.emit('LEVEL_COMPLETED');
         if (this.stars.countActive(true) === 0) {
             console.log('ALL STARS COLLECTED!!!');
             this.game.events.emit('LEVEL_COMPLETED');
