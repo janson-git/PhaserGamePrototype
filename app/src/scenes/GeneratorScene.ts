@@ -12,6 +12,7 @@ import MathUtils from "../lib/MathUtils";
 export class GeneratorScene extends Phaser.Scene {
     private readonly MAP_WIDTH: number;
     private readonly MAP_HEIGHT: number;
+    private readonly MAP_VIEW_SCALE: number;
 
     private zones: Tree[];
     private rooms: Room[];
@@ -32,13 +33,14 @@ export class GeneratorScene extends Phaser.Scene {
         const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
             active: false,
             visible: false,
-            key: 'Generator'
+            key: 'Generator',
         };
 
         super(sceneConfig);
 
         this.MAP_WIDTH = 120;
         this.MAP_HEIGHT = 120;
+        this.MAP_VIEW_SCALE = 3;
 
         this.zones = [];
         this.rooms = [];
@@ -62,19 +64,28 @@ export class GeneratorScene extends Phaser.Scene {
         // отрисуем зоны, комнаты из коридоры
         this.drawMap();
 
-        // КНОПОЧКИ
+        // BUTTONS
         // кнопочка перегенерации карты
-        this.generateButton = new TextButton(this, 5, 5, 'Generate');
+        this.generateButton = new TextButton(this, 5, 5, '[Generate]');
         this.generateButton.setFontSize(12).setDepth(10);
         this.generateButton.on('pointerdown', () => this.restartScene());
         this.add.existing(this.generateButton);
+
+        // run cellular automate
+        this.nextIterationButton = new TextButton(this, 5, 25, '[Iterate Map Filter]');
+        this.nextIterationButton.setFontSize(12).setDepth(10);
+        this.nextIterationButton.on('pointerdown', () => {
+            this.nextCellularAutomateIteration();
+        });
+        this.add.existing(this.nextIterationButton);
+
         // кнопочка скрыть/показать метки комнат и корридоров
-        this.showMarksButton = new TextButton(this, 70, 5, 'Show marks');
+        this.showMarksButton = new TextButton(this, 5, 55, '[Show marks]');
         this.showMarksButton.setFontSize(12).setDepth(10);
         this.showMarksButton.on('pointerdown', () => this.toggleMarks());
         this.add.existing(this.showMarksButton);
-        // кнопочка скачать скриншот
-        this.getScreenshotButton = new TextButton(this, 150, 5, 'Screenshot');
+        // screenshot
+        this.getScreenshotButton = new TextButton(this, 5, 75, '[Screenshot]');
         this.getScreenshotButton.setFontSize(12).setDepth(10);
         this.getScreenshotButton.on('pointerdown', () => {
             this.game.renderer.snapshot(function (image:HTMLImageElement) {
@@ -84,16 +95,8 @@ export class GeneratorScene extends Phaser.Scene {
         });
         this.add.existing(this.getScreenshotButton);
 
-        // кнопочка запуска клеточного автомата
-        this.nextIterationButton = new TextButton(this, 250, 5, 'Iterate Map Filter');
-        this.nextIterationButton.setFontSize(12).setDepth(10);
-        this.nextIterationButton.on('pointerdown', () => {
-            this.nextCellularAutomateIteration();
-        });
-        this.add.existing(this.nextIterationButton);
-
-        // кнопочка для получения дампа карты в textarea
-        let getDumpButton = new TextButton(this, 400, 5, 'Get dump')
+        // dump maps to textarea
+        let getDumpButton = new TextButton(this, 5, 95, '[Get dump]')
             .setFontSize(12)
             .on('pointerdown', () => {
                 this.getMapDump();
@@ -101,7 +104,7 @@ export class GeneratorScene extends Phaser.Scene {
         this.add.existing(getDumpButton);
 
         // кнопочка для возвращения в основное меню
-        let returnToMainMenuButton = new TextButton(this, this.cameras.main.width - 115, 5, 'Return to Menu')
+        let returnToMainMenuButton = new TextButton(this, this.cameras.main.width - 120, 5, '[Return to Menu]')
             .setFontSize(12)
             .on('pointerdown', () => {
                 this.scene.start('Hello');
@@ -147,10 +150,10 @@ export class GeneratorScene extends Phaser.Scene {
      * от краёв холста по X и Y, исходя из размера карты и ширины камеры
      */
     private getMapOffsetX(): number {
-        return (this.cameras.main.width / 2) - (this.MAP_WIDTH / 2);
+        return ((this.cameras.main.width / 2) - (this.MAP_WIDTH / 2) * this.MAP_VIEW_SCALE);
     }
     private getMapOffsetY(): number {
-        return (this.cameras.main.height / 2) - (this.MAP_HEIGHT / 2);
+        return ((this.cameras.main.height / 2) - (this.MAP_HEIGHT / 2) * this.MAP_VIEW_SCALE);
     }
 
     private drawMap() {
@@ -159,7 +162,13 @@ export class GeneratorScene extends Phaser.Scene {
         let mapOffsetX = this.getMapOffsetX();
         let mapOffsetY = this.getMapOffsetY();
 
-        this.add.rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, this.MAP_WIDTH, this.MAP_HEIGHT, 0x000000);
+        this.add.rectangle(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            this.MAP_WIDTH * this.MAP_VIEW_SCALE,
+            this.MAP_HEIGHT * this.MAP_VIEW_SCALE,
+            0x000000
+        );
 
         // и теперь для всех комнат и коридоров для дебага можно отрисовать их метки
         // поверх уже нарисованной карты
@@ -181,13 +190,16 @@ export class GeneratorScene extends Phaser.Scene {
         this.rooms.forEach((room: Room) => {
             // при отрисовке на поле, позиционирование происходит по центру спрайта/фигуры
             this.add.rectangle(
-                mapOffsetX + room.x + (room.width / 2), mapOffsetY + room.y + (room.height / 2),
-                room.width, room.height,
+                mapOffsetX + (room.x * this.MAP_VIEW_SCALE) + (room.width / 2) * this.MAP_VIEW_SCALE,
+                mapOffsetY + (room.y * this.MAP_VIEW_SCALE) + (room.height / 2) * this.MAP_VIEW_SCALE,
+                room.width * this.MAP_VIEW_SCALE,
+                room.height * this.MAP_VIEW_SCALE,
                 0xFFFFFF
             );
 
             let mark = this.add.text(
-                mapOffsetX + room.x, mapOffsetY + room.y,
+                mapOffsetX + room.x * this.MAP_VIEW_SCALE,
+                mapOffsetY + room.y * this.MAP_VIEW_SCALE,
                 `${room.id}`
             ).setColor('green').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
@@ -195,13 +207,16 @@ export class GeneratorScene extends Phaser.Scene {
         // КОРИДОРЫ
         this.corridors.forEach((corridor: Corridor) => {
             this.add.rectangle(
-                mapOffsetX + corridor.x + (corridor.width / 2), mapOffsetY + corridor.y + (corridor.height / 2),
-                corridor.width, corridor.height,
-                0xFFFFFF
+                mapOffsetX + (corridor.x * this.MAP_VIEW_SCALE) + (corridor.width / 2) * this.MAP_VIEW_SCALE,
+                mapOffsetY + (corridor.y * this.MAP_VIEW_SCALE) + (corridor.height / 2) * this.MAP_VIEW_SCALE,
+                corridor.width * this.MAP_VIEW_SCALE,
+                corridor.height * this.MAP_VIEW_SCALE,
+                0xFFCCCC
             );
 
             let mark = this.add.text(
-                mapOffsetX + corridor.x + corridor.width / 2, mapOffsetY + corridor.y + corridor.height / 2,
+                mapOffsetX + corridor.x * this.MAP_VIEW_SCALE + (corridor.width / 2) * this.MAP_VIEW_SCALE,
+                mapOffsetY + corridor.y * this.MAP_VIEW_SCALE + (corridor.height / 2) * this.MAP_VIEW_SCALE,
                 `${corridor.id}`
             ).setColor('black').setBackgroundColor('yellow').setFontSize(10).setVisible(this.isDebugMarksVisible).setDepth(10);
             this.debugMarks.push(mark);
@@ -216,11 +231,11 @@ export class GeneratorScene extends Phaser.Scene {
             this.graphicsForMap.clear();
             this.mapGenerator.runFilterIteration();
             this.graphicsForMap.translateCanvas(this.getMapOffsetX(), this.getMapOffsetY());
-            this.mapGenerator.renderMap(this.graphicsForMap);
+            this.mapGenerator.renderMap(this.graphicsForMap, this.MAP_VIEW_SCALE);
         } else {
             this.graphicsForMap = this.add.graphics();
             this.graphicsForMap.translateCanvas(this.getMapOffsetX(), this.getMapOffsetY());
-            this.mapGenerator.renderMap(this.graphicsForMap);
+            this.mapGenerator.renderMap(this.graphicsForMap, this.MAP_VIEW_SCALE);
         }
     }
 

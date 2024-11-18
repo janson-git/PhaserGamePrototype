@@ -89,9 +89,10 @@ export default class BSPMazeGenerator {
     /**
      * Отрисовывает карту в переданный объект graphics
      * @param graphics
+     * @param mapScale
      */
-    public renderMap(graphics: Phaser.GameObjects.Graphics) {
-        this.cellularAutomate.renderMap(graphics);
+    public renderMap(graphics: Phaser.GameObjects.Graphics, mapScale: number = 1) {
+        this.cellularAutomate.renderMap(graphics, mapScale);
     }
 
     private getSplitSizes(size) : Array<number> {

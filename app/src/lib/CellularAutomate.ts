@@ -165,7 +165,7 @@ export default class CellularAutomate
 
     }
 
-    public renderMap(graphics: Graphics) {
+    public renderMap(graphics: Graphics, mapScale: number = 1) {
         graphics.setDefaultStyles({
             lineStyle: {
                 width: 1,
@@ -197,7 +197,7 @@ export default class CellularAutomate
             }
             let point = this.offsetToCoord(index);
             graphics.fillStyle(color, 1);
-            graphics.fillPoint(point.x, point.y);
+            graphics.fillPoint(point.x * mapScale, point.y * mapScale, mapScale);
         });
     }
 
